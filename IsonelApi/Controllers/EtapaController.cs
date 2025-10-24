@@ -45,6 +45,35 @@ namespace IsonelApi.Controllers
                 etapa.Responsavel
             });
         }
+
+        [HttpPut("{id}")]
+        public IActionResult AtualizarEtapa(int id, [FromBody] EtapaUpdateDto dto)
+        {
+            var etapa = _context.Etapas.FirstOrDefault(e => e.Id == id);
+            if (etapa == null)
+                return NotFound("Etapa não encontrada.");
+
+            if (!string.IsNullOrWhiteSpace(dto.Status))
+                etapa.Status = dto.Status;
+
+            if (!string.IsNullOrWhiteSpace(dto.Observacao))
+                etapa.Observacao = dto.Observacao;
+
+            if (!string.IsNullOrWhiteSpace(dto.Responsavel))
+                etapa.Responsavel = dto.Responsavel;
+
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                message = "Etapa atualizada com sucesso!",
+                etapa.Id,
+                etapa.TipoEtapa,
+                etapa.Status,
+                etapa.Responsavel,
+                etapa.Observacao
+            });
+        }
     }
 
     public class EtapaCreateDto
@@ -53,5 +82,12 @@ namespace IsonelApi.Controllers
         public string TipoEtapa { get; set; } = string.Empty;
         public string Responsavel { get; set; } = string.Empty;
         public string Observacao { get; set; } = string.Empty;
+    }
+
+    public class EtapaUpdateDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public string Observacao { get; set; } = string.Empty;
+        public string Responsavel { get; set; } = string.Empty;
     }
 }
