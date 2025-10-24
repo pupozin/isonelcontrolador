@@ -10,6 +10,6 @@
         public string Usuario { get; set; } = string.Empty;
 
         // Relacionamento
-        public required Processo Processo { get; set; }
+        public Processo? Processo { get; set; }
     }
 }

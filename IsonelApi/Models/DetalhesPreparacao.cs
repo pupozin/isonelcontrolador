@@ -12,6 +12,6 @@
         public int Quantidade { get; set; }
 
         // Relacionamento
-        public required Etapa Etapa { get; set; }
+        public Etapa? Etapa { get; set; }
     }
 }

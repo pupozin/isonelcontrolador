@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IsonelApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8fc3b4d13a468b233ee234a7be95ef0d0ec407e3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+803a30ceb66ab2a3ea74a7190655f0b9f1ecb7de")]
 [assembly: System.Reflection.AssemblyProductAttribute("IsonelApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IsonelApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

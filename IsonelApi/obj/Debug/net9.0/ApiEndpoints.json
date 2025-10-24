@@ -1,0 +1,66 @@
+[
+  {
+    "ContainingType": "IsonelApi.Controllers.DetalhesPreparacaoController",
+    "Method": "AdicionarDetalhes",
+    "RelativePath": "api/DetalhesPreparacao",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.DetalhesPreparacaoCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.EtapaController",
+    "Method": "CriarEtapa",
+    "RelativePath": "api/Etapa",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.EtapaCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.HistoricoMovimentacaoController",
+    "Method": "Registrar",
+    "RelativePath": "api/HistoricoMovimentacao",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.HistoricoCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "CriarProcesso",
+    "RelativePath": "api/Processo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.ProcessoCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

@@ -166,3 +166,4 @@ C:\Users\GabrielPupo\Desktop\IsonelControlador\isonelcontrolador\IsonelApi\obj\D
 C:\Users\GabrielPupo\Desktop\IsonelControlador\isonelcontrolador\IsonelApi\obj\Debug\net9.0\IsonelApi.pdb
 C:\Users\GabrielPupo\Desktop\IsonelControlador\isonelcontrolador\IsonelApi\obj\Debug\net9.0\IsonelApi.genruntimeconfig.cache
 C:\Users\GabrielPupo\Desktop\IsonelControlador\isonelcontrolador\IsonelApi\obj\Debug\net9.0\ref\IsonelApi.dll
+C:\Users\GabrielPupo\Desktop\IsonelControlador\isonelcontrolador\IsonelApi\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
