@@ -1,0 +1,6 @@
+@IsonelApi_HostAddress = http://localhost:5188
+
+GET {{IsonelApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
