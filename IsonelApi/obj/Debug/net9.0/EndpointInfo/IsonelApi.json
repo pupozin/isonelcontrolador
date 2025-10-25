@@ -36,6 +36,48 @@
         }
       }
     },
+    "/api/DetalhesPreparacao/{id}": {
+      "put": {
+        "tags": [
+          "DetalhesPreparacao"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetalhesPreparacaoUpdateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetalhesPreparacaoUpdateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetalhesPreparacaoUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Etapa": {
       "post": {
         "tags": [
@@ -56,6 +98,48 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/EtapaCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Etapa/{id}": {
+      "put": {
+        "tags": [
+          "Etapa"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EtapaUpdateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EtapaUpdateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EtapaUpdateDto"
               }
             }
           }
@@ -128,10 +212,147 @@
           }
         }
       }
+    },
+    "/api/Processo/{id}": {
+      "put": {
+        "tags": [
+          "Processo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessoUpdateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessoUpdateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessoUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Processo/{id}/avancar-etapa": {
+      "post": {
+        "tags": [
+          "Processo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvancarEtapaDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvancarEtapaDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvancarEtapaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Processo/andamento": {
+      "get": {
+        "tags": [
+          "Processo"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Processo/{id}/detalhes": {
+      "get": {
+        "tags": [
+          "Processo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AvancarEtapaDto": {
+        "type": "object",
+        "properties": {
+          "proximaEtapa": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsavel": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "DetalhesPreparacaoCreateDto": {
         "type": "object",
         "properties": {
@@ -139,6 +360,40 @@
             "type": "integer",
             "format": "int32"
           },
+          "tipoMaterial": {
+            "type": "string",
+            "nullable": true
+          },
+          "comprimento": {
+            "type": "number",
+            "format": "double"
+          },
+          "largura": {
+            "type": "number",
+            "format": "double"
+          },
+          "altura": {
+            "type": "number",
+            "format": "double"
+          },
+          "espessura": {
+            "type": "number",
+            "format": "double"
+          },
+          "quantidade": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DetalhesPreparacaoUpdateDto": {
+        "type": "object",
+        "properties": {
           "tipoMaterial": {
             "type": "string",
             "nullable": true
@@ -192,6 +447,24 @@
         },
         "additionalProperties": false
       },
+      "EtapaUpdateDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsavel": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "HistoricoCreateDto": {
         "type": "object",
         "properties": {
@@ -234,6 +507,20 @@
             "nullable": true
           },
           "observacao": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProcessoUpdateDto": {
+        "type": "object",
+        "properties": {
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusAtual": {
             "type": "string",
             "nullable": true
           }

@@ -1,4 +1,5 @@
-﻿using IsonelApi.Models; // 👈 importa as classes dos modelos
+﻿using IsonelApi.Controllers;
+using IsonelApi.Models; // 👈 importa as classes dos modelos
 using Microsoft.EntityFrameworkCore;
 
 namespace IsonelApi.Data
@@ -11,5 +12,17 @@ namespace IsonelApi.Data
         public DbSet<Etapa> Etapas { get; set; }
         public DbSet<DetalhesPreparacao> DetalhesPreparacoes { get; set; }
         public DbSet<HistoricoMovimentacao> HistoricoMovimentacoes { get; set; }
+        public DbSet<ProcessoAndamentoDto> ProcessosAndamento { get; set; }
+        public DbSet<DetalhesProcessoAndamentoDto> DetalhesProcessoAndamento { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // 🔹 Registra o DTO da procedure (sem chave, sem tabela)
+            modelBuilder.Entity<ProcessoAndamentoDto>().HasNoKey();
+            modelBuilder.Entity<DetalhesProcessoAndamentoDto>().HasNoKey();
+        }
     }
 }
+

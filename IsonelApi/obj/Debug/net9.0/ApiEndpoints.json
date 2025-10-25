@@ -16,6 +16,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "IsonelApi.Controllers.DetalhesPreparacaoController",
+    "Method": "AtualizarDetalhes",
+    "RelativePath": "api/DetalhesPreparacao/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.DetalhesPreparacaoUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "IsonelApi.Controllers.EtapaController",
     "Method": "CriarEtapa",
     "RelativePath": "api/Etapa",
@@ -26,6 +47,27 @@
       {
         "Name": "dto",
         "Type": "IsonelApi.Controllers.EtapaCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.EtapaController",
+    "Method": "AtualizarEtapa",
+    "RelativePath": "api/Etapa/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.EtapaUpdateDto",
         "IsRequired": true
       }
     ],
@@ -61,6 +103,74 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "AtualizarProcesso",
+    "RelativePath": "api/Processo/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.ProcessoUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "AvancarEtapa",
+    "RelativePath": "api/Processo/{id}/avancar-etapa",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "IsonelApi.Controllers.AvancarEtapaDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "ObterDetalhesProcessoAndamento",
+    "RelativePath": "api/Processo/{id}/detalhes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "ListarProcessosAndamento",
+    "RelativePath": "api/Processo/andamento",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   }
 ]

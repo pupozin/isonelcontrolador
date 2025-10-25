@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using IsonelApi.Data;
+﻿using IsonelApi.Data;
 using IsonelApi.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IsonelApi.Controllers
 {
@@ -134,6 +135,9 @@ namespace IsonelApi.Controllers
             // Atualiza processo
             processo.EstadoAtual = proximaEtapa;
             processo.StatusAtual = "Em andamento";
+            etapaAtual.Status = "Finalizado";
+            etapaAtual.DataFim = DateTime.Now;
+
 
             // Registra histórico
             var historico = new HistoricoMovimentacao
@@ -159,6 +163,33 @@ namespace IsonelApi.Controllers
                 historicoId = historico.Id
             });
         }
+
+        //Retorna Processo em andamento
+
+        [HttpGet("andamento")]
+        public IActionResult ListarProcessosAndamento()
+        {
+            var lista = _context.Set<ProcessoAndamentoDto>()
+                .FromSqlRaw("EXEC sp_ListarProcessosAndamento")
+                .ToList();
+
+            return Ok(lista);
+        }
+
+        //Retorna detalhes Processo em andamento
+        [HttpGet("{id}/detalhes")]
+        public IActionResult ObterDetalhesProcessoAndamento(int id)
+        {
+            var detalhes = _context.DetalhesProcessoAndamento
+                .FromSqlRaw("EXEC sp_ListarDetalhesProcessoAndamento @p0", id)
+                .AsEnumerable() 
+                .FirstOrDefault();
+
+            if (detalhes == null)
+                return NotFound("Detalhes do processo não encontrados.");
+
+            return Ok(detalhes);
+        }
     }
 
     public class ProcessoCreateDto
@@ -182,4 +213,31 @@ namespace IsonelApi.Controllers
         public string Responsavel { get; set; } = string.Empty;
         public string? Observacao { get; set; }
     }
+
+    public class ProcessoAndamentoDto
+    {
+        public int Id { get; set; }
+        public string? Codigo { get; set; }
+        public string? Cliente { get; set; }
+        public string? Produto { get; set; }
+        public string? EstadoAtual { get; set; }
+        public string? StatusEtapa { get; set; }
+        public string? Responsavel { get; set; }
+        public DateTime DataInicio { get; set; }
+    }
+
+    public class DetalhesProcessoAndamentoDto
+    {
+        public int ProcessoId { get; set; }
+        public string? Codigo { get; set; }
+        public string? Cliente { get; set; }
+        public string? Produto { get; set; }
+        public string? EstadoAtual { get; set; }
+        public string? StatusEtapa { get; set; }
+        public string? Responsavel { get; set; }
+        public string? Observacao { get; set; }
+        public DateTime DataInicioProcesso { get; set; }
+        public DateTime DataInicioEtapa { get; set; }
+    }
+
 }
