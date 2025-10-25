@@ -190,6 +190,33 @@ namespace IsonelApi.Controllers
 
             return Ok(detalhes);
         }
+
+        //Retorna dados da etapa atual selecionada 
+        [HttpGet("etapa/andamento/{tipoEtapa}")]
+        public IActionResult ListarProcessosEtapaEmAndamento(string tipoEtapa)
+        {
+            var lista = _context.ProcessosEtapaEmAndamento
+                .FromSqlRaw("EXEC sp_ListarProcessosEtapaEmAndamento @p0", tipoEtapa)
+                .AsEnumerable()
+                .ToList();
+
+            return Ok(lista);
+        }
+
+        //Retorna detalhes da etapa atual de um processo
+        [HttpGet("{id}/detalhes-etapa")]
+        public IActionResult ObterDetalhesEtapaAtual(int id)
+        {
+            var detalhes = _context.DetalhesEtapaAtual
+                .FromSqlRaw("EXEC sp_ListarDetalhesEtapaAtual @p0", id)
+                .AsEnumerable()
+                .FirstOrDefault();
+
+            if (detalhes == null)
+                return NotFound("Nenhuma etapa encontrada para este processo.");
+
+            return Ok(detalhes);
+        }
     }
 
     public class ProcessoCreateDto
@@ -236,6 +263,29 @@ namespace IsonelApi.Controllers
         public string? StatusEtapa { get; set; }
         public string? Responsavel { get; set; }
         public string? Observacao { get; set; }
+        public DateTime DataInicioProcesso { get; set; }
+        public DateTime DataInicioEtapa { get; set; }
+    }
+
+    public class ProcessoEtapaEmAndamentoDto
+    {
+        public int ProcessoId { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Cliente { get; set; } = string.Empty;
+        public string Responsavel { get; set; } = string.Empty;
+        public string StatusEtapa { get; set; } = string.Empty;
+    }
+
+    public class DetalhesEtapaAtualDto
+    {
+        public int ProcessoId { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Cliente { get; set; } = string.Empty;
+        public string Produto { get; set; } = string.Empty;
+        public string TipoEtapa { get; set; } = string.Empty;
+        public string StatusEtapa { get; set; } = string.Empty;
+        public string Responsavel { get; set; } = string.Empty;
+        public string Observacao { get; set; } = string.Empty;
         public DateTime DataInicioProcesso { get; set; }
         public DateTime DataInicioEtapa { get; set; }
     }

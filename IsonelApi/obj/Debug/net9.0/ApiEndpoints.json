@@ -165,12 +165,44 @@
   },
   {
     "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "ObterDetalhesEtapaAtual",
+    "RelativePath": "api/Processo/{id}/detalhes-etapa",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
     "Method": "ListarProcessosAndamento",
     "RelativePath": "api/Processo/andamento",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "IsonelApi.Controllers.ProcessoController",
+    "Method": "ListarProcessosEtapaEmAndamento",
+    "RelativePath": "api/Processo/etapa/andamento/{tipoEtapa}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tipoEtapa",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   }
 ]

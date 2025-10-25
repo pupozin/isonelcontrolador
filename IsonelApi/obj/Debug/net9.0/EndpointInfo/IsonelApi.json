@@ -331,6 +331,51 @@
           }
         }
       }
+    },
+    "/api/Processo/etapa/andamento/{tipoEtapa}": {
+      "get": {
+        "tags": [
+          "Processo"
+        ],
+        "parameters": [
+          {
+            "name": "tipoEtapa",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Processo/{id}/detalhes-etapa": {
+      "get": {
+        "tags": [
+          "Processo"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {

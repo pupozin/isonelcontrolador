@@ -14,6 +14,8 @@ namespace IsonelApi.Data
         public DbSet<HistoricoMovimentacao> HistoricoMovimentacoes { get; set; }
         public DbSet<ProcessoAndamentoDto> ProcessosAndamento { get; set; }
         public DbSet<DetalhesProcessoAndamentoDto> DetalhesProcessoAndamento { get; set; }
+        public DbSet<ProcessoEtapaEmAndamentoDto> ProcessosEtapaEmAndamento { get; set; }
+        public DbSet<DetalhesEtapaAtualDto> DetalhesEtapaAtual { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +24,8 @@ namespace IsonelApi.Data
             // 🔹 Registra o DTO da procedure (sem chave, sem tabela)
             modelBuilder.Entity<ProcessoAndamentoDto>().HasNoKey();
             modelBuilder.Entity<DetalhesProcessoAndamentoDto>().HasNoKey();
+            modelBuilder.Entity<ProcessoEtapaEmAndamentoDto>().HasNoKey();
+            modelBuilder.Entity<DetalhesEtapaAtualDto>().HasNoKey();
         }
     }
 }
