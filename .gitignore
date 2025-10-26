@@ -5,3 +5,7 @@
 /IsonelApi/.vs
 /.vs/IsonelSolution
 /.vs/ProjectEvaluation
+obj/
+bin/
+*.user
+*.suo
