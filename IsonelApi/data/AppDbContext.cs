@@ -17,6 +17,8 @@ namespace IsonelApi.Data
         public DbSet<ProcessoEtapaEmAndamentoDto> ProcessosEtapaEmAndamento { get; set; }
         public DbSet<DetalhesEtapaAtualDto> DetalhesEtapaAtual { get; set; }
 
+        public DbSet<MaterialPreparacaoDto> MaterialPreparacao { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -26,6 +28,7 @@ namespace IsonelApi.Data
             modelBuilder.Entity<DetalhesProcessoAndamentoDto>().HasNoKey();
             modelBuilder.Entity<ProcessoEtapaEmAndamentoDto>().HasNoKey();
             modelBuilder.Entity<DetalhesEtapaAtualDto>().HasNoKey();
+            modelBuilder.Entity<MaterialPreparacaoDto>().HasNoKey();
         }
     }
 }

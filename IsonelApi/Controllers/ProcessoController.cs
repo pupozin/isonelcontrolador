@@ -217,6 +217,22 @@ namespace IsonelApi.Controllers
 
             return Ok(detalhes);
         }
+
+        // Retorna os detalhes da etapa de Preparação (materiais)
+        [HttpGet("{id}/detalhes-preparacao")]
+        public IActionResult ObterDetalhesPreparacaoAtual(int id)
+        {
+            var detalhes = _context.Set<MaterialPreparacaoDto>()
+                .FromSqlRaw("EXEC sp_ListarDetalhesPreparacaoAtual @p0", id)
+                .AsEnumerable()
+                .ToList();
+
+
+            if (detalhes == null || !detalhes.Any())
+                return NotFound("Nenhum detalhe de preparação encontrado para este processo.");
+
+            return Ok(detalhes);
+        }
     }
 
     public class ProcessoCreateDto
@@ -289,5 +305,15 @@ namespace IsonelApi.Controllers
         public DateTime DataInicioProcesso { get; set; }
         public DateTime DataInicioEtapa { get; set; }
     }
+
+    public class MaterialPreparacaoDto
+    {
+        public string TipoMaterial { get; set; } = string.Empty;
+        public decimal Altura { get; set; }
+        public decimal Espessura { get; set; }
+        public decimal Largura { get; set; }
+        public int Quantidade { get; set; }
+    }
+
 
 }
