@@ -20,7 +20,7 @@
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
         <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsavel: {{ p.responsavel }}</p>
 
-        <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
+      <button class="btn-detalhes" (click)="abrirDetalhesGeral(p)">Detalhes</button>
       </div>
     </div>
   </div>
@@ -41,7 +41,7 @@
         <span class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</span>
         <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
-        <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
+       <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
         <button class="btn-acao" (click)="avancarEtapa(p)">Avancar etapa</button>
       </div>
     </div>
@@ -105,6 +105,8 @@
       <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ etapaSelecionada?.etapa }}</p>
       <p><i class="fa-solid fa-calendar-days"></i> Processo Iniciado: {{ etapaSelecionada?.dataInicio }}</p>
       <p><i class="fa-solid fa-calendar-days"></i> Etapa iniciada: {{ etapaSelecionada?.dataEtapa }}</p>
+      <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processoSelecionado?.cliente }}</p>
+      <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processoSelecionado?.produto }}</p>
       <p>
         <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
         <input class="input-responsavel" type="text" [(ngModel)]="etapaSelecionada.responsavel" />

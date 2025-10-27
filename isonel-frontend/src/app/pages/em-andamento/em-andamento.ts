@@ -60,15 +60,10 @@ export class EmAndamento {
     this.modalEtapaAberto = false;
   }
 
-  abrirDetalhes(p: any) {
+  // 🔹 Detalhes GERAL (Aba 1)
+  abrirDetalhesGeral(p: any) {
     this.fecharModais();
-
-    // 🔹 Cria cópia profunda (para não compartilhar referência com o outro modal)
-    this.processoSelecionado = JSON.parse(JSON.stringify(p));
-
-    // 🔹 Adiciona campo exclusivo para diferenciar modal geral
-    this.processoSelecionado.tipoModal = 'geral';
-
+    this.processoSelecionado = { ...p };
     this.modalGeralAberto = true;
   }
 
@@ -81,15 +76,10 @@ export class EmAndamento {
     this.modalGeralAberto = false;
   }
 
-  avancarEtapa(p: any) {
+  // 🔹 Detalhes ETAPA (Aba 2)
+  abrirDetalhesEtapa(p: any) {
     this.fecharModais();
-
-    // 🔹 Cópia separada do mesmo processo para modal de etapa
-    this.etapaSelecionada = JSON.parse(JSON.stringify(p));
-
-    // 🔹 Campo auxiliar pra garantir isolamento de contexto
-    this.etapaSelecionada.tipoModal = 'etapa';
-
+    this.etapaSelecionada = { ...p };
     this.modalEtapaAberto = true;
   }
 
@@ -100,5 +90,11 @@ export class EmAndamento {
   salvarEtapa() {
     console.log('Salvar alterações da Etapa:', this.etapaSelecionada);
     this.modalEtapaAberto = false;
+  }
+
+  // 🔹 Avançar etapa (não abre modal)
+  avancarEtapa(p: any) {
+    console.log('Avançar etapa do processo:', p);
+    // lógica futura aqui
   }
 }
