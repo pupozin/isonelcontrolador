@@ -1,0 +1,8 @@
+.main-wrapper {
+  margin-top: 70px;
+  transition: margin-left 0.4s ease;
+}
+
+.main-wrapper.shifted {
+  margin-left: 250px;
+}

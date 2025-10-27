@@ -1,0 +1,96 @@
+/* HEADER */
+.header-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100px;
+  width: 100%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 20px;
+  z-index: 100;
+  transition: margin-left 0.4s ease;
+}
+
+.header-page.shifted {
+  margin-left: 270px;
+}
+
+.logo-img {
+  width: 150px;
+}
+
+.menu-toggle {
+  cursor: pointer;
+  font-size: 1.8rem;
+  color: white;
+  padding-left: 30px;
+  padding-right: 50px;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  width: 250px;
+  height: 700px;
+  border-radius: 30px;
+  background-color: var(--cor-branca);
+  padding-top: 30px;
+  transition: transform 0.4s ease;
+  transform: translateX(-125%);
+  text-align: center;
+  z-index: 90;
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      a {
+        color: var(--cor-primaria);
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+        padding-top: 18px;
+        display: block;
+        transition: 0.3s;
+        height: 50px;  
+
+        &:hover {
+          background-color: var(--cor-primaria);
+          color: var(--cor-branca);
+          padding-left: 35px;
+        }
+      }
+    }
+  }
+
+  &.open {
+    transform: translateX(0);
+  }
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 80;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Main content displacement is handled globally in app.scss */

@@ -1,0 +1,20 @@
+<header class="header-page" [class.shifted]="menuAberto">
+  <div class="menu-toggle" (click)="toggleMenu()">
+    <i class="fa-solid fa-bars"></i>
+  </div>
+
+  <a class="logo" routerLink="/">
+    <img class="logo-img" src="/images/logoisonelbranco.png" alt="Isonel_logo">
+  </a>
+</header>
+
+<nav class="sidebar" [class.open]="menuAberto">
+  <ul>
+    <li><a routerLink="/andamento" (click)="closeMenu()">Em andamento</a></li>
+    <li><a routerLink="/finalizado" (click)="closeMenu()">Finalizado</a></li>
+    <li><a routerLink="/pausado" (click)="closeMenu()">Pausado</a></li>
+    <li><a routerLink="/dados" (click)="closeMenu()">Dados</a></li>
+  </ul>
+</nav>
+
+<div class="overlay" [class.show]="menuAberto" (click)="closeMenu()"></div>
