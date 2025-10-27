@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class EmAndamento {
   abaAtiva = 'geral';
-  etapaAtiva = 'Venda';
+  etapaAtiva = 'Preparacao';
 
   modalGeralAberto = false;
   modalEtapaAberto = false;
@@ -27,7 +27,7 @@ export class EmAndamento {
       codigo: '00291',
       status: 'Em andamento',
       cor: 'orange',
-      etapa: 'Venda',
+      etapa: 'Preparação',
       dataInicio: '27/10/2025 12:00',
       dataEtapa: '27/10/2025 12:00',
       cliente: 'Mercado Barbosa',
@@ -50,13 +50,39 @@ export class EmAndamento {
   ];
 
   etapas = [
-    { nome: 'Venda', qtd: 3 },
-    { nome: 'Preparação', qtd: 1 },
-    { nome: 'Colagem', qtd: 0 },
-    { nome: 'Secagem', qtd: 0 },
-    { nome: 'Montagem', qtd: 0 },
-    { nome: 'Entrega', qtd: 0 },
+    'Venda',
+    'Preparação',
+    'Colagem',
+    'Secagem',
+    'Montagem',
+    'Entrega',
   ];
+
+  constructor() {
+    const etapaComProcesso = this.etapasResumo.find((etapa) => etapa.qtd > 0);
+    if (etapaComProcesso) {
+      this.etapaAtiva = etapaComProcesso.nome;
+    }
+  }
+
+  get etapasResumo() {
+    const nomes = new Set(this.etapas);
+
+    this.processos.forEach((processo) => nomes.add(processo.etapa));
+
+    return Array.from(nomes).map((nome) => ({
+      nome,
+      qtd: this.processos.filter((processo) => processo.etapa === nome).length,
+    }));
+  }
+
+  get processosFiltrados() {
+    if (!this.etapaAtiva) {
+      return this.processos;
+    }
+
+    return this.processos.filter((processo) => processo.etapa === this.etapaAtiva);
+  }
 
   private fecharModais() {
     this.modalGeralAberto = false;

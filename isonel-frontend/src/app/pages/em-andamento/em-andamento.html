@@ -28,7 +28,7 @@
   <!-- Aba 2: Processos -->
   <div *ngIf="abaAtiva === 'processos'" class="aba-processos">
     <div class="abas-internas">
-      <button *ngFor="let etapa of etapas"
+      <button *ngFor="let etapa of etapasResumo"
               [class.active]="etapa.nome === etapaAtiva"
               (click)="etapaAtiva = etapa.nome">
         {{ etapa.nome }} ({{ etapa.qtd }})
@@ -36,7 +36,7 @@
     </div>
 
     <div class="lista-processos">
-      <div *ngFor="let p of processos" class="linha-processo">
+      <div *ngFor="let p of processosFiltrados" class="linha-processo">
         <span class="status"><strong>Processo #{{ p.codigo }}</strong></span>
         <span class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</span>
         <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
