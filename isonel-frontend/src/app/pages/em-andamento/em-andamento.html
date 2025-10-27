@@ -13,10 +13,13 @@
     <div class="cards-container">
       <div *ngFor="let p of processos" class="card-processo">
         <h4>Processo #{{ p.codigo }}</h4>
-        <p><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</p>
+        <p class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</p>
+
         <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ p.etapa }}</p>
-        <p><i class="fa-solid fa-user"></i> Responsável: {{ p.responsavel }}</p>
-        <p><i class="fa-solid fa-box"></i> Produto: {{ p.produto }}</p>
+        <p><i class="fa-solid fa-calendar-days"></i> Iniciado: {{ p.dataInicio }}</p>
+        <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ p.cliente }}</p>
+        <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
+        <p><i class="fa-solid fa-user-gear"></i> Responsável: {{ p.responsavel }}</p>
 
         <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
       </div>
@@ -25,24 +28,24 @@
 
   <!-- Aba 2: Processos -->
   <div *ngIf="abaAtiva === 'processos'" class="aba-processos">
-        <div class="abas-internas">
-        <button *ngFor="let etapa of etapas"
-                [class.active]="etapa.nome === etapaAtiva"
-                (click)="etapaAtiva = etapa.nome">
-            {{ etapa.nome }} ({{ etapa.qtd }})
-        </button>
-        </div>
+    <div class="abas-internas">
+      <button *ngFor="let etapa of etapas"
+              [class.active]="etapa.nome === etapaAtiva"
+              (click)="etapaAtiva = etapa.nome">
+        {{ etapa.nome }} ({{ etapa.qtd }})
+      </button>
+    </div>
 
-        <div class="lista-processos">
-        <div *ngFor="let p of processos" class="linha-processo">
-            <span>Processo #{{ p.codigo }}</span>
-            <span><i class="fa-solid fa-circle" [style.color]="p.cor"></i>{{ p.status }}</span>
-            <span><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
-            <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
-            <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
-            <button class="btn-acao" (click)="avancarEtapa(p)">Avançar etapa</button>
-        </div>
-        </div>
+    <div class="lista-processos">
+      <div *ngFor="let p of processos" class="linha-processo">
+        <span><strong>Processo #{{ p.codigo }}</strong></span>
+        <span><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</span>
+        <span><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
+        <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
+        <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
+        <button class="btn-acao" (click)="avancarEtapa(p)">Avançar etapa</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal -->
@@ -52,7 +55,11 @@
       <p><strong>Código:</strong> {{ processoSelecionado?.codigo }}</p>
       <p><strong>Etapa:</strong> {{ processoSelecionado?.etapa }}</p>
       <p><strong>Status:</strong> {{ processoSelecionado?.status }}</p>
+      <p><strong>Cliente:</strong> {{ processoSelecionado?.cliente }}</p>
+      <p><strong>Produto:</strong> {{ processoSelecionado?.produto }}</p>
       <p><strong>Responsável:</strong> {{ processoSelecionado?.responsavel }}</p>
+      <p><strong>Data de início:</strong> {{ processoSelecionado?.dataInicio }}</p>
+
       <button (click)="fecharModal()">Fechar</button>
     </div>
   </div>
