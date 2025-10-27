@@ -14,12 +14,11 @@
       <div *ngFor="let p of processos" class="card-processo">
         <h4>Processo #{{ p.codigo }}</h4>
         <p class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</p>
-
         <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ p.etapa }}</p>
         <p><i class="fa-solid fa-calendar-days"></i> Iniciado: {{ p.dataInicio }}</p>
         <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ p.cliente }}</p>
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
-        <p><i class="fa-solid fa-user-gear"></i> Responsável: {{ p.responsavel }}</p>
+        <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsavel: {{ p.responsavel }}</p>
 
         <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
       </div>
@@ -38,29 +37,87 @@
 
     <div class="lista-processos">
       <div *ngFor="let p of processos" class="linha-processo">
-        <span><strong>Processo #{{ p.codigo }}</strong></span>
-        <span><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</span>
-        <span><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
+        <span class="status"><strong>Processo #{{ p.codigo }}</strong></span>
+        <span class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</span>
+        <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
         <button class="btn-detalhes" (click)="abrirDetalhes(p)">Detalhes</button>
-        <button class="btn-acao" (click)="avancarEtapa(p)">Avançar etapa</button>
+        <button class="btn-acao" (click)="avancarEtapa(p)">Avancar etapa</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <h3>Detalhes do processo</h3>
-      <p><strong>Código:</strong> {{ processoSelecionado?.codigo }}</p>
-      <p><strong>Etapa:</strong> {{ processoSelecionado?.etapa }}</p>
-      <p><strong>Status:</strong> {{ processoSelecionado?.status }}</p>
-      <p><strong>Cliente:</strong> {{ processoSelecionado?.cliente }}</p>
-      <p><strong>Produto:</strong> {{ processoSelecionado?.produto }}</p>
-      <p><strong>Responsável:</strong> {{ processoSelecionado?.responsavel }}</p>
-      <p><strong>Data de início:</strong> {{ processoSelecionado?.dataInicio }}</p>
+<!-- Modal: Detalhes Geral -->
+<ng-container *ngIf="modalGeralAberto">
+  <div class="modal-overlay" (click)="fecharModalGeral()">
+    <div class="modal-detalhes" (click)="$event.stopPropagation()">
+      <h2>Detalhes</h2>
 
-      <button (click)="fecharModal()">Fechar</button>
+      <h3>Processo #{{ processoSelecionado?.codigo }}</h3>
+
+      <div class="status-row">
+        <i class="fa-solid fa-circle" [style.color]="processoSelecionado?.cor"></i>
+        <select [(ngModel)]="processoSelecionado.status" class="input-status">
+          <option>Em andamento</option>
+          <option>Finalizado</option>
+          <option>Pendente</option>
+        </select>
+      </div>
+
+      <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ processoSelecionado?.etapa }}</p>
+      <p><i class="fa-solid fa-calendar-days"></i> Processo Iniciado: {{ processoSelecionado?.dataInicio }}</p>
+      <p><i class="fa-solid fa-calendar-days"></i> Etapa iniciada: {{ processoSelecionado?.dataEtapa }}</p>
+      <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processoSelecionado?.cliente }}</p>
+      <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processoSelecionado?.produto }}</p>
+      <p>
+        <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
+        <input class="input-responsavel" type="text" [(ngModel)]="processoSelecionado.responsavel" />
+      </p>
+
+      <label>Observação</label>
+      <textarea [(ngModel)]="processoSelecionado.observacao" placeholder="Digite aqui..."></textarea>
+
+      <div class="modal-actions">
+        <button class="btn-cancelar" (click)="fecharModalGeral()">Cancelar</button>
+        <button class="btn-concluir" (click)="salvarAlteracoes()">Concluir</button>
+      </div>
     </div>
   </div>
+</ng-container>
+
+<!-- Modal: Detalhes Etapa -->
+<ng-container *ngIf="modalEtapaAberto">
+  <div class="modal-overlay" (click)="fecharModalEtapa()">
+    <div class="modal-detalhes" (click)="$event.stopPropagation()">
+      <h2>Detalhes da Etapa</h2>
+
+      <h3>Processo #{{ etapaSelecionada?.codigo }}</h3>
+
+      <div class="status-row">
+        <i class="fa-solid fa-circle" [style.color]="etapaSelecionada?.cor"></i>
+        <select [(ngModel)]="etapaSelecionada.status" class="input-status">
+          <option>Em andamento</option>
+          <option>Finalizado</option>
+          <option>Pendente</option>
+        </select>
+      </div>
+
+      <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ etapaSelecionada?.etapa }}</p>
+      <p><i class="fa-solid fa-calendar-days"></i> Processo Iniciado: {{ etapaSelecionada?.dataInicio }}</p>
+      <p><i class="fa-solid fa-calendar-days"></i> Etapa iniciada: {{ etapaSelecionada?.dataEtapa }}</p>
+      <p>
+        <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
+        <input class="input-responsavel" type="text" [(ngModel)]="etapaSelecionada.responsavel" />
+      </p>
+
+      <label>Observação</label>
+      <textarea [(ngModel)]="etapaSelecionada.observacao" placeholder="Digite aqui..."></textarea>
+
+      <div class="modal-actions">
+        <button class="btn-cancelar" (click)="fecharModalEtapa()">Cancelar</button>
+        <button class="btn-concluir" (click)="salvarEtapa()">Concluir</button>
+      </div>
+    </div>
+  </div>
+</ng-container>
 </div>
