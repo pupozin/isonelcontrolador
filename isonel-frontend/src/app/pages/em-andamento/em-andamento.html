@@ -42,7 +42,7 @@
         <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
        <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
-        <button class="btn-acao" (click)="avancarEtapa(p)">Avancar etapa</button>
+       <button class="btn-acao" (click)="abrirAvancarEtapa(p)">Avançar etapa</button>
       </div>
     </div>
   </div>
@@ -122,4 +122,24 @@
     </div>
   </div>
 </ng-container>
+
+<!-- Modal: Avançar Etapa -->
+<div class="modal-overlay" *ngIf="modalAvancarAberto" (click)="fecharModalAvancar()">
+  <div class="modal-avancar" (click)="$event.stopPropagation()">
+    <h2>Avançar etapa</h2>
+
+    <p>Insira o responsável pela próxima etapa</p>
+    <input
+      type="text"
+      [(ngModel)]="novoResponsavel"
+      placeholder="Nome do responsável"
+      class="input-responsavel"
+    />
+
+    <div class="modal-actions">
+      <button class="btn-cancelar" (click)="fecharModalAvancar()">Cancelar</button>
+      <button class="btn-concluir" (click)="concluirAvanco()">Concluir</button>
+    </div>
+  </div>
+</div>
 </div>

@@ -15,9 +15,12 @@ export class EmAndamento {
 
   modalGeralAberto = false;
   modalEtapaAberto = false;
+  modalAvancarAberto = false;
 
   processoSelecionado: any = null;
   etapaSelecionada: any = null;
+  processoAvancar: any = null;
+  novoResponsavel: string = '';
 
   processos = [
     {
@@ -58,9 +61,10 @@ export class EmAndamento {
   private fecharModais() {
     this.modalGeralAberto = false;
     this.modalEtapaAberto = false;
+    this.modalAvancarAberto = false;
   }
 
-  // 🔹 Detalhes GERAL (Aba 1)
+  // Detalhes GERAL
   abrirDetalhesGeral(p: any) {
     this.fecharModais();
     this.processoSelecionado = { ...p };
@@ -76,7 +80,7 @@ export class EmAndamento {
     this.modalGeralAberto = false;
   }
 
-  // 🔹 Detalhes ETAPA (Aba 2)
+  // Detalhes ETAPA
   abrirDetalhesEtapa(p: any) {
     this.fecharModais();
     this.etapaSelecionada = { ...p };
@@ -92,9 +96,32 @@ export class EmAndamento {
     this.modalEtapaAberto = false;
   }
 
-  // 🔹 Avançar etapa (não abre modal)
-  avancarEtapa(p: any) {
-    console.log('Avançar etapa do processo:', p);
-    // lógica futura aqui
+  // ➕ Avançar Etapa (novo modal)
+  abrirAvancarEtapa(p: any) {
+    this.fecharModais();
+    this.processoAvancar = { ...p };
+    this.novoResponsavel = '';
+    this.modalAvancarAberto = true;
+  }
+
+  fecharModalAvancar() {
+    this.modalAvancarAberto = false;
+  }
+
+  concluirAvanco() {
+    if (!this.novoResponsavel.trim()) {
+      alert('Informe o responsável pela próxima etapa.');
+      return;
+    }
+
+    console.log(`Avançando processo #${this.processoAvancar.codigo}`);
+    console.log(`Novo responsável: ${this.novoResponsavel}`);
+
+    // 🔹 Simulação da atualização (mock)
+    this.processoAvancar.responsavel = this.novoResponsavel;
+    this.processoAvancar.etapa = 'Preparação'; // apenas exemplo de próxima etapa
+
+    // Fecha o modal
+    this.modalAvancarAberto = false;
   }
 }
