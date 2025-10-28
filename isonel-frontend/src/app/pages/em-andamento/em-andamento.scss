@@ -117,55 +117,75 @@
   color: #000;
   padding: 15px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) auto auto;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr auto auto auto; /* +1 coluna pro botão Corte */
   align-items: center;
-  column-gap: 18px;
+  column-gap: 10px; /* gap menor pra caber melhor */
+  overflow: hidden;
+  white-space: nowrap; /* evita quebra dentro dos textos */
+  padding-inline: 20px; /* dá um respiro lateral */
 
   .status {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .responsavel {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   &:nth-child(even) {
     background: #f5f5f5;
   }
 
+  .btn-detalhes,
+  .btn-corte,
+  .btn-acao {
+    justify-self: end;
+    white-space: nowrap; /* impede quebra dentro dos botões */
+  }
+
+  /* botões com margens menores pra caber lado a lado */
+  .btn-detalhes {
+    background-color: transparent;
+    color: var(--cor-primaria);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+
+  .btn-corte {
+    background-color: transparent;
+    color: var(--cor-primaria);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+
   .btn-acao {
     background-color: var(--cor-primaria);
     color: #fff;
     border: none;
-    padding: 10px 12px 10px;
-    border-radius: 15px;
-    justify-self: end;
+    padding: 8px 10px;
+    border-radius: 10px;
   }
 
-  .btn-detalhes{
-    background-color: rgba(255, 0, 0, 0.0);
-    color: var(--cor-primaria);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    justify-self: end;
-  }
-
-  i{
+  i {
     font-size: 10px;
     margin-right: 5px;
     color: var(--cor-primaria);
   }
 
-  span{
+  span {
     font-size: 15px;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
+
 
 /* ===========================
    MODAIS DE DETALHES
@@ -376,3 +396,79 @@
     transform: scale(1);
   }
 }
+
+/* Botão "Corte" (mesmo estilo do Avançar etapa) */
+.btn-corte {
+   background-color: rgba(255, 0, 0, 0.0);
+    color: var(--cor-primaria);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    justify-self: end;
+}
+
+/* Modal Corte */
+.modal-corte {
+  background: #fff;
+  color: #000;
+  border-radius: 15px;
+  padding: 30px;
+  width: 480px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.2s ease;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .input-descricao {
+    width: 100%;
+    min-height: 100px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+    resize: none;
+    margin-bottom: 25px;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .btn-cancelar {
+    background: #f3f3f3;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn-concluir {
+    background: #00e000;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    &:hover {
+      background: #00c000;
+    }
+  }
+}
+

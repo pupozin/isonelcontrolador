@@ -150,4 +150,34 @@ export class EmAndamento {
     // Fecha o modal
     this.modalAvancarAberto = false;
   }
+
+  // ➕ NOVAS VARIÁVEIS
+modalCorteAberto = false;
+processoCorte: any = null;
+infoCorte: string = '';
+
+// ➕ NOVOS MÉTODOS
+abrirModalCorte(p: any) {
+  this.fecharModais();
+  this.processoCorte = { ...p };
+  this.infoCorte = '';
+  this.modalCorteAberto = true;
+}
+
+fecharModalCorte() {
+  this.modalCorteAberto = false;
+}
+
+concluirCorte() {
+  if (!this.infoCorte.trim()) {
+    alert('Descreva o corte antes de concluir.');
+    return;
+  }
+
+  console.log(`Corte registrado no processo #${this.processoCorte.codigo}`);
+  console.log(`Detalhes do corte: ${this.infoCorte}`);
+
+  this.modalCorteAberto = false;
+}
+
 }
