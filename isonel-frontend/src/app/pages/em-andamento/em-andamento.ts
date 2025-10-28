@@ -54,8 +54,10 @@ export class EmAndamento {
     'Preparação',
     'Colagem',
     'Secagem',
-    'Montagem',
+    'Dobragem',
     'Entrega',
+    'Montagem',
+    'Ligação'
   ];
 
   constructor() {
@@ -155,29 +157,61 @@ export class EmAndamento {
 modalCorteAberto = false;
 processoCorte: any = null;
 infoCorte: string = '';
+materiais: any[] = [];
 
 // ➕ NOVOS MÉTODOS
 abrirModalCorte(p: any) {
   this.fecharModais();
   this.processoCorte = { ...p };
-  this.infoCorte = '';
+  // começa com uma linha vazia
+  this.materiais = [{ material: '', altura: '', largura: '', espessura: '', quantidade: '' }];
   this.modalCorteAberto = true;
+}
+
+adicionarLinha() {
+  this.materiais.push({ material: '', altura: '', largura: '', espessura: '', quantidade: '' });
+}
+
+removerLinha(index: number) {
+  this.materiais.splice(index, 1);
+}
+
+concluirCorte() {
+  // valida todas as linhas
+  const invalidos = this.materiais.some(m => 
+    !m.material || !m.altura || !m.largura || !m.espessura || !m.quantidade
+  );
+
+  if (invalidos) {
+    alert('Preencha todos os campos antes de concluir.');
+    return;
+  }
+
+  console.log(`Cortes do processo #${this.processoCorte.codigo}:`);
+  console.table(this.materiais);
+
+  // Aqui você chamaria a API real
+  // this.http.post(`/api/etapas/${this.processoCorte.codigo}/cortes`, this.materiais)...
+
+  alert(`Cortes registrados com sucesso para o processo #${this.processoCorte.codigo}!`);
+  this.modalCorteAberto = false;
 }
 
 fecharModalCorte() {
   this.modalCorteAberto = false;
 }
 
-concluirCorte() {
-  if (!this.infoCorte.trim()) {
-    alert('Descreva o corte antes de concluir.');
-    return;
-  }
+finalizarProcesso(p: any) {
+  console.log(`🔹 Finalizando processo #${p.codigo}`);
+  
+  // Aqui você vai chamar a outra API:
+  // this.http.post('/api/processos/finalizar', { id: p.codigo })...
 
-  console.log(`Corte registrado no processo #${this.processoCorte.codigo}`);
-  console.log(`Detalhes do corte: ${this.infoCorte}`);
+  // Simulação temporária:
+  p.status = 'Finalizado';
+  p.cor = 'green';
 
-  this.modalCorteAberto = false;
+  alert(`Processo #${p.codigo} finalizado com sucesso!`);
 }
 
 }

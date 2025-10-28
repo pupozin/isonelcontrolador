@@ -43,7 +43,19 @@
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
        <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
        <button *ngIf="p.etapa === 'Preparação'" class="btn-corte" (click)="abrirModalCorte(p)">Corte</button>
-       <button class="btn-acao" (click)="abrirAvancarEtapa(p)">Avançar etapa</button>
+        <button 
+          *ngIf="p.etapa !== 'Ligação'" 
+          class="btn-acao" 
+          (click)="abrirAvancarEtapa(p)">
+          Avançar etapa
+        </button>
+
+        <button 
+          *ngIf="p.etapa === 'Ligação'" 
+          class="btn-acao btn-finalizar" 
+          (click)="finalizarProcesso(p)">
+          Finalizar processo
+        </button>
       </div>
     </div>
   </div>
@@ -145,21 +157,32 @@
 </div>
 
 <!-- Modal: Corte -->
+<!-- Modal: Corte -->
 <div class="modal-overlay" *ngIf="modalCorteAberto" (click)="fecharModalCorte()">
   <div class="modal-corte" (click)="$event.stopPropagation()">
-    <h2>Registrar corte</h2>
+    <h2>Corte</h2>
 
-    <p>Descreva o corte realizado</p>
-    <textarea 
-      [(ngModel)]="infoCorte" 
-      placeholder="Ex: corte da chapa lateral ajustado em 3cm"
-      class="input-descricao"></textarea>
-
-    <div class="modal-actions">
-      <button class="btn-cancelar" (click)="fecharModalCorte()">Cancelar</button>
-      <button class="btn-concluir" (click)="concluirCorte()">Concluir</button>
+    <div class="modal-corte__content">
+      <div *ngFor="let item of materiais; let i = index" class="linha-inputs">
+        <input type="text" [(ngModel)]="item.material" placeholder="Material" />
+        <input type="number" [(ngModel)]="item.altura" placeholder="Altura" />
+        <input type="number" [(ngModel)]="item.largura" placeholder="Largura" />
+        <input type="number" [(ngModel)]="item.espessura" placeholder="Espessura" />
+        <input type="number" [(ngModel)]="item.quantidade" placeholder="Quantidade" />
+        
+        <!-- botão remover linha -->
+        <button class="btn-add" (click)="removerLinha(i)">−</button>
+      </div>
+  
+      <button class="btn-add" (click)="adicionarLinha()">+</button>
+  
+      <div class="modal-actions">
+        <button class="btn-cancelar" (click)="fecharModalCorte()">Cancelar</button>
+        <button class="btn-concluir" (click)="concluirCorte()">Concluir</button>
+      </div>
     </div>
   </div>
 </div>
+
 
 </div>

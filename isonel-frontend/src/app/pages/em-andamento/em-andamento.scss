@@ -247,7 +247,7 @@
     min-height: 120px;
     border-radius: 10px;
     border: 1px solid #ddd;
-    background-color: #d3d3d3;
+    background-color: #ebeaea;
     padding: 10px;
     font-size: 15px;
     resize: none;
@@ -259,7 +259,7 @@
   }
 
   .observacao {
-    background: #d3d3d3;
+    background: #ebeaea;
   }
 
   .responsavel {
@@ -275,7 +275,7 @@
 
   .input-status, .input-responsavel {
     border: none;
-    background: #d3d3d3;
+    background: #ebeaea;
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 15px;
@@ -407,68 +407,132 @@
     justify-self: end;
 }
 
-/* Modal Corte */
 .modal-corte {
   background: #fff;
   color: #000;
-  border-radius: 15px;
-  padding: 30px;
-  width: 480px;
-  max-width: 90%;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  border-radius: 20px;
+  padding: 40px;
+  width: 900px;
+  max-width: 95%;
+  max-height: 80vh; /* 🔹 impede o crescimento além da tela */
+  overflow-y: auto; /* 🔹 adiciona scroll interno */
+  text-align: left;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.2s ease;
+  position: relative;
 
   h2 {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
-    margin-bottom: 15px;
+    margin-bottom: 35px;
+    height: 100px;
+    top: -40px;
+    padding-top: 30px;
+    position: sticky; /* 🔹 ações fixas no final */
+    background: #ffffff;
+    padding-bottom: 10px;
+    z-index: 5;
   }
 
-  p {
-    font-size: 14px;
-    margin-bottom: 10px;
+  .linha-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+
+    input {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 14px;
+      border-radius: 15px;
+      border: none;
+      background: #f5f5f5;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .btn-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: #f5f5f5;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 22px;
+      color: #999;
+      transition: 0.2s;
+
+      &:hover {
+        background: #e0e0e0;
+      }
+    }
   }
 
-  .input-descricao {
-    width: 100%;
-    min-height: 100px;
+  .btn-add {
+    background: #f5f5f5;
+    border: none;
     border-radius: 10px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 14px;
-    resize: none;
-    margin-bottom: 25px;
+    font-size: 22px;
+    cursor: pointer;
+    color: #555;
+    width: 40px;
+    height: 40px;
+    margin-top: 5px;
+    transition: 0.2s;
+    align-self: flex-end;
+
+    &:hover {
+      background: #ddd;
+    }
   }
 
   .modal-actions {
     display: flex;
-    justify-content: center;
-    gap: 20px;
-  }
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 40px;
+    bottom: -40px;
+    padding-bottom: 10px;
+    position: sticky; /* 🔹 ações fixas no final */
+    background: #fff;
+    padding-top: 15px;
+    z-index: 5;
 
-  .btn-cancelar {
-    background: #f3f3f3;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-  }
+    .btn-cancelar {
+      background: #f5f5f5;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #000;
+      transition: 0.2s;
 
-  .btn-concluir {
-    background: #00e000;
-    color: #fff;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: 0.2s;
+      &:hover {
+        background: #e0e0e0;
+      }
+    }
 
-    &:hover {
-      background: #00c000;
+    .btn-concluir {
+      background: #00e000;
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+
+      &:hover {
+        background: #00c000;
+      }
     }
   }
 }
+
+
 
