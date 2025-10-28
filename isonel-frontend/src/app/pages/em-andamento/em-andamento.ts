@@ -82,11 +82,36 @@ export class EmAndamento implements OnInit {
     this.modalCorteAberto = false;
   }
 
-  abrirDetalhesGeral(p: any) {
-    this.fecharModais();
-    this.processoSelecionado = { ...p };
-    this.modalGeralAberto = true;
-  }
+abrirDetalhesGeral(p: any) {
+  this.fecharModais();
+  this.modalGeralAberto = true;
+  this.carregando = true;
+
+  this.processoService.obterDetalhesProcesso(p.id).subscribe({
+    next: (dados) => {
+      this.processoSelecionado = {
+        codigo: dados.codigo,
+        cliente: dados.cliente,
+        produto: dados.produto,
+        etapa: dados.estadoAtual,
+        status: dados.statusEtapa ?? 'Em andamento',
+        cor: dados.statusEtapa === 'Finalizado' ? 'green' : 'orange',
+        dataInicio: new Date(dados.dataInicioProcesso).toLocaleString(),
+        dataEtapa: new Date(dados.dataInicioEtapa).toLocaleString(),
+        responsavel: dados.responsavel,
+        observacao: dados.observacao ?? ''
+      };
+      this.carregando = false;
+    },
+    error: (err) => {
+      console.error('❌ Erro ao carregar detalhes do processo:', err);
+      this.carregando = false;
+      this.modalGeralAberto = false;
+      alert('Erro ao carregar detalhes. Veja o console.');
+    }
+  });
+}
+
 
   abrirDetalhesEtapa(p: any) {
     this.fecharModais();
