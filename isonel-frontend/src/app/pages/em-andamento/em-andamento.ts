@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class EmAndamento {
   abaAtiva = 'geral';
-  etapaAtiva = 'Preparacao';
+  etapaAtiva = 'Venda';
 
   modalGeralAberto = false;
   modalEtapaAberto = false;
@@ -39,7 +39,7 @@ export class EmAndamento {
       codigo: '00292',
       status: 'Finalizado',
       cor: 'green',
-      etapa: 'Venda',
+      etapa: 'Ligação',
       dataInicio: '27/10/2025 14:00',
       dataEtapa: '27/10/2025 14:00',
       cliente: 'Dani Narguiles',

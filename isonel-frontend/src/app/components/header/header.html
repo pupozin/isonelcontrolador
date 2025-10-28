@@ -18,8 +18,8 @@
   </div>
 
   <div class="btn-create-process">
-    <button class="btn">Criar processo</button>
-  </div>
+  <button class="btn" (click)="abrirModalCriar()">Criar processo</button>
+</div>
 </header>
 
 <nav class="sidebar" [class.open]="menuAberto">
@@ -32,3 +32,39 @@
 </nav>
 
 <div class="overlay" [class.show]="menuAberto" (click)="closeMenu()"></div>
+
+<!-- Modal: Criar Processo -->
+<div class="modal-overlay" *ngIf="modalCriarAberto" (click)="fecharModalCriar()">
+  <div class="modal-criar" (click)="$event.stopPropagation()">
+    <h2>Criar novo processo</h2>
+
+    <label>Status</label>
+    <select [(ngModel)]="novoProcesso.status">
+      <option>Em andamento</option>
+      <option>Pausado</option>
+      <option>Finalizado</option>
+    </select>
+
+    <label>Etapa inicial</label>
+    <select [(ngModel)]="novoProcesso.etapa">
+      <option *ngFor="let e of etapas" [value]="e">{{ e }}</option>
+    </select>
+
+    <label>Cliente</label>
+    <input type="text" [(ngModel)]="novoProcesso.cliente" placeholder="Nome do cliente" />
+
+    <label>Responsável Etapa</label>
+    <input type="text" [(ngModel)]="novoProcesso.responsavel" placeholder="Nome do resposável pela etapa" />
+
+    <label>Produto</label>
+    <input type="text" [(ngModel)]="novoProcesso.produto" placeholder="Produto" />
+
+    <label>Observação</label>
+    <textarea [(ngModel)]="novoProcesso.observacao" placeholder="Digite aqui..."></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-cancelar" (click)="fecharModalCriar()">Cancelar</button>
+      <button class="btn-concluir" (click)="criarProcesso()">Criar</button>
+    </div>
+  </div>
+</div>
