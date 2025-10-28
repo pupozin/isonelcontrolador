@@ -38,13 +38,6 @@
   <div class="modal-criar" (click)="$event.stopPropagation()">
     <h2>Criar novo processo</h2>
 
-    <label>Status</label>
-    <select [(ngModel)]="novoProcesso.status">
-      <option>Em andamento</option>
-      <option>Pausado</option>
-      <option>Finalizado</option>
-    </select>
-
     <label>Etapa inicial</label>
     <select [(ngModel)]="novoProcesso.etapa">
       <option *ngFor="let e of etapas" [value]="e">{{ e }}</option>
@@ -67,4 +60,23 @@
       <button class="btn-concluir" (click)="criarProcesso()">Criar</button>
     </div>
   </div>
+</div>
+
+<!-- Toast de feedback -->
+<div
+  class="toast"
+  *ngIf="toast.visivel"
+  [ngClass]="toast.tipo"
+>
+  <div class="toast-content">
+    <i
+      class="fa-solid"
+      [ngClass]="{
+        'fa-check-circle': toast.tipo === 'sucesso',
+        'fa-times-circle': toast.tipo === 'erro'
+      }"
+    ></i>
+    <span>{{ toast.mensagem }}</span>
+  </div>
+  <div class="toast-bar"></div>
 </div>
