@@ -14,7 +14,7 @@ export class ProcessoService {
     return this.http.post(`${this.apiUrl}`, dados);
   }
 
-  listarEmAndamento(): Observable<any[]> {
+listarProcessosAndamento(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/andamento`);
   }
 }

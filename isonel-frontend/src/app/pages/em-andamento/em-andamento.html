@@ -12,7 +12,7 @@
 
     <div class="cards-container">
       <div *ngFor="let p of processos" class="card-processo">
-        <h4>Processo #{{ p.codigo }}</h4>
+        <h4>{{ p.codigo }}</h4>
         <p class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</p>
         <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ p.etapa }}</p>
         <p><i class="fa-solid fa-calendar-days"></i> Iniciado: {{ p.dataInicio }}</p>
@@ -37,7 +37,7 @@
 
     <div class="lista-processos">
       <div *ngFor="let p of processosFiltrados" class="linha-processo">
-        <span class="status"><strong>Processo #{{ p.codigo }}</strong></span>
+        <span class="status"><strong>{{ p.codigo }}</strong></span>
         <span class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</span>
         <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
@@ -66,7 +66,7 @@
     <div class="modal-detalhes" (click)="$event.stopPropagation()">
       <h2>Detalhes</h2>
 
-      <h3>Processo #{{ processoSelecionado?.codigo }}</h3>
+      <h3>{{ processoSelecionado?.codigo }}</h3>
 
       <div class="status-row">
         <i class="fa-solid fa-circle" [style.color]="processoSelecionado?.cor"></i>
@@ -104,7 +104,7 @@
     <div class="modal-detalhes" (click)="$event.stopPropagation()">
       <h2>Detalhes da Etapa</h2>
 
-      <h3>Processo #{{ etapaSelecionada?.codigo }}</h3>
+      <h3>{{ etapaSelecionada?.codigo }}</h3>
 
       <div class="status-row">
         <i class="fa-solid fa-circle" [style.color]="etapaSelecionada?.cor"></i>

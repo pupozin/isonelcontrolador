@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ProcessoService } from '../../services/processo';
 
 @Component({
   selector: 'app-em-andamento',
@@ -9,122 +10,90 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './em-andamento.html',
   styleUrls: ['./em-andamento.scss']
 })
-export class EmAndamento {
+export class EmAndamento implements OnInit {
   abaAtiva = 'geral';
   etapaAtiva = 'Venda';
+
+  processos: any[] = [];
+  carregando = false;
 
   modalGeralAberto = false;
   modalEtapaAberto = false;
   modalAvancarAberto = false;
+  modalCorteAberto = false;
 
   processoSelecionado: any = null;
   etapaSelecionada: any = null;
   processoAvancar: any = null;
+  processoCorte: any = null;
   novoResponsavel: string = '';
-
-  processos = [
-    {
-      codigo: '00291',
-      status: 'Em andamento',
-      cor: 'orange',
-      etapa: 'Preparação',
-      dataInicio: '27/10/2025 12:00',
-      dataEtapa: '27/10/2025 12:00',
-      cliente: 'Mercado Barbosa',
-      produto: 'Câmara Frigorífica',
-      responsavel: 'Funcionário 1',
-      observacao: 'Cliente solicitou prioridade na entrega.'
-    },
-    {
-      codigo: '00292',
-      status: 'Finalizado',
-      cor: 'green',
-      etapa: 'Ligação',
-      dataInicio: '27/10/2025 14:00',
-      dataEtapa: '27/10/2025 14:00',
-      cliente: 'Dani Narguiles',
-      produto: 'Câmara Frigorífica',
-      responsavel: 'Funcionário 2',
-      observacao: ''
-    }
-  ];
+  materiais: any[] = [];
 
   etapas = [
-    'Venda',
-    'Preparação',
-    'Colagem',
-    'Secagem',
-    'Dobragem',
-    'Entrega',
-    'Montagem',
-    'Ligação'
+    'Venda', 'Preparação', 'Colagem', 'Secagem', 'Dobragem', 'Entrega', 'Montagem', 'Ligação'
   ];
 
-  constructor() {
-    const etapaComProcesso = this.etapasResumo.find((etapa) => etapa.qtd > 0);
-    if (etapaComProcesso) {
-      this.etapaAtiva = etapaComProcesso.nome;
-    }
+  constructor(private processoService: ProcessoService) {}
+
+  ngOnInit() {
+    this.carregarProcessos();
+  }
+
+  carregarProcessos() {
+    this.carregando = true;
+    this.processoService.listarProcessosAndamento().subscribe({
+      next: (dados) => {
+        this.processos = dados.map((p) => ({
+          id: p.id,
+          codigo: p.codigo,
+          cliente: p.cliente,
+          produto: p.produto,
+          etapa: p.estadoAtual,
+          status: p.statusEtapa ?? 'Em andamento',
+          cor: p.statusEtapa === 'Finalizado' ? 'green' : 'orange',
+          dataInicio: new Date(p.dataInicio).toLocaleString(),
+          responsavel: p.responsavel
+        }));
+        this.carregando = false;
+      },
+      error: (err) => {
+        console.error('❌ Erro ao carregar processos:', err);
+        this.carregando = false;
+      }
+    });
   }
 
   get etapasResumo() {
-    const nomes = new Set(this.etapas);
-
-    this.processos.forEach((processo) => nomes.add(processo.etapa));
-
-    return Array.from(nomes).map((nome) => ({
+    return this.etapas.map((nome) => ({
       nome,
-      qtd: this.processos.filter((processo) => processo.etapa === nome).length,
+      qtd: this.processos.filter((p) => p.etapa === nome).length
     }));
   }
 
   get processosFiltrados() {
-    if (!this.etapaAtiva) {
-      return this.processos;
-    }
-
-    return this.processos.filter((processo) => processo.etapa === this.etapaAtiva);
+    return this.processos.filter((p) => p.etapa === this.etapaAtiva);
   }
 
-  private fecharModais() {
+  // ========== MODAIS ==========
+  fecharModais() {
     this.modalGeralAberto = false;
     this.modalEtapaAberto = false;
     this.modalAvancarAberto = false;
+    this.modalCorteAberto = false;
   }
 
-  // Detalhes GERAL
   abrirDetalhesGeral(p: any) {
     this.fecharModais();
     this.processoSelecionado = { ...p };
     this.modalGeralAberto = true;
   }
 
-  fecharModalGeral() {
-    this.modalGeralAberto = false;
-  }
-
-  salvarAlteracoes() {
-    console.log('Salvar alterações do processo (Geral):', this.processoSelecionado);
-    this.modalGeralAberto = false;
-  }
-
-  // Detalhes ETAPA
   abrirDetalhesEtapa(p: any) {
     this.fecharModais();
     this.etapaSelecionada = { ...p };
     this.modalEtapaAberto = true;
   }
 
-  fecharModalEtapa() {
-    this.modalEtapaAberto = false;
-  }
-
-  salvarEtapa() {
-    console.log('Salvar alterações da Etapa:', this.etapaSelecionada);
-    this.modalEtapaAberto = false;
-  }
-
-  // ➕ Avançar Etapa (novo modal)
   abrirAvancarEtapa(p: any) {
     this.fecharModais();
     this.processoAvancar = { ...p };
@@ -132,8 +101,27 @@ export class EmAndamento {
     this.modalAvancarAberto = true;
   }
 
-  fecharModalAvancar() {
-    this.modalAvancarAberto = false;
+  abrirModalCorte(p: any) {
+    this.fecharModais();
+    this.processoCorte = { ...p };
+    this.materiais = [{ material: '', altura: '', largura: '', espessura: '', quantidade: '' }];
+    this.modalCorteAberto = true;
+  }
+
+  fecharModalGeral() { this.modalGeralAberto = false; }
+  fecharModalEtapa() { this.modalEtapaAberto = false; }
+  fecharModalAvancar() { this.modalAvancarAberto = false; }
+  fecharModalCorte() { this.modalCorteAberto = false; }
+
+  // ========= AÇÕES ==========
+  salvarAlteracoes() {
+    console.log('🔹 Salvando alterações gerais:', this.processoSelecionado);
+    this.modalGeralAberto = false;
+  }
+
+  salvarEtapa() {
+    console.log('🔹 Salvando alterações da etapa:', this.etapaSelecionada);
+    this.modalEtapaAberto = false;
   }
 
   concluirAvanco() {
@@ -142,76 +130,32 @@ export class EmAndamento {
       return;
     }
 
-    console.log(`Avançando processo #${this.processoAvancar.codigo}`);
-    console.log(`Novo responsável: ${this.novoResponsavel}`);
-
-    // 🔹 Simulação da atualização (mock)
-    this.processoAvancar.responsavel = this.novoResponsavel;
-    this.processoAvancar.etapa = 'Preparação'; // apenas exemplo de próxima etapa
-
-    // Fecha o modal
+    console.log(`Avançando ${this.processoAvancar.codigo} → novo responsável: ${this.novoResponsavel}`);
     this.modalAvancarAberto = false;
   }
 
-  // ➕ NOVAS VARIÁVEIS
-modalCorteAberto = false;
-processoCorte: any = null;
-infoCorte: string = '';
-materiais: any[] = [];
-
-// ➕ NOVOS MÉTODOS
-abrirModalCorte(p: any) {
-  this.fecharModais();
-  this.processoCorte = { ...p };
-  // começa com uma linha vazia
-  this.materiais = [{ material: '', altura: '', largura: '', espessura: '', quantidade: '' }];
-  this.modalCorteAberto = true;
-}
-
-adicionarLinha() {
-  this.materiais.push({ material: '', altura: '', largura: '', espessura: '', quantidade: '' });
-}
-
-removerLinha(index: number) {
-  this.materiais.splice(index, 1);
-}
-
-concluirCorte() {
-  // valida todas as linhas
-  const invalidos = this.materiais.some(m => 
-    !m.material || !m.altura || !m.largura || !m.espessura || !m.quantidade
-  );
-
-  if (invalidos) {
-    alert('Preencha todos os campos antes de concluir.');
-    return;
+  adicionarLinha() {
+    this.materiais.push({ material: '', altura: '', largura: '', espessura: '', quantidade: '' });
   }
 
-  console.log(`Cortes do processo #${this.processoCorte.codigo}:`);
-  console.table(this.materiais);
+  removerLinha(index: number) {
+    this.materiais.splice(index, 1);
+  }
 
-  // Aqui você chamaria a API real
-  // this.http.post(`/api/etapas/${this.processoCorte.codigo}/cortes`, this.materiais)...
+  concluirCorte() {
+    const invalidos = this.materiais.some(m => !m.material || !m.altura || !m.largura || !m.espessura || !m.quantidade);
+    if (invalidos) {
+      alert('Preencha todos os campos antes de concluir.');
+      return;
+    }
 
-  alert(`Cortes registrados com sucesso para o processo #${this.processoCorte.codigo}!`);
-  this.modalCorteAberto = false;
-}
+    console.table(this.materiais);
+    this.modalCorteAberto = false;
+  }
 
-fecharModalCorte() {
-  this.modalCorteAberto = false;
-}
-
-finalizarProcesso(p: any) {
-  console.log(`🔹 Finalizando processo #${p.codigo}`);
-  
-  // Aqui você vai chamar a outra API:
-  // this.http.post('/api/processos/finalizar', { id: p.codigo })...
-
-  // Simulação temporária:
-  p.status = 'Finalizado';
-  p.cor = 'green';
-
-  alert(`Processo #${p.codigo} finalizado com sucesso!`);
-}
-
+  finalizarProcesso(p: any) {
+    console.log(`🔹 Finalizando${p.codigo}`);
+    p.status = 'Finalizado';
+    p.cor = 'green';
+  }
 }
