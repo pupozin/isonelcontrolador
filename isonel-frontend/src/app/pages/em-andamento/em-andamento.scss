@@ -9,6 +9,12 @@
   display: flex;
   gap: 15px;
   margin-bottom: 50px;
+  position: sticky;
+  margin-top: -130px;
+  top: 0;
+  z-index: 50;
+  height: 200px;
+  background-color: var(--cor-primaria);
 
   .tab {
     background: none;
@@ -21,6 +27,7 @@
     transition: 0.3s;
     font-size: 18px;
     width: 200px;
+    padding-top: 150px;
 
     &.active {
       border-color: var(--cor-branca);
@@ -45,7 +52,6 @@
   border-radius: 20px;
   padding: 30px;
   width: 400px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 
   .status {
     display: flex;
