@@ -1,5 +1,11 @@
 <div class="em-andamento-container container">
 
+  <!-- LOADING PRINCIPAL -->
+<div class="loading-overlay" *ngIf="carregando">
+  <div class="spinner"></div>
+  <p>Carregando processos...</p>
+</div>
+
   <!-- Abas principais -->
   <div class="tabs">
     <button class="tab" [class.active]="abaAtiva === 'geral'" (click)="abaAtiva = 'geral'">Geral</button>
