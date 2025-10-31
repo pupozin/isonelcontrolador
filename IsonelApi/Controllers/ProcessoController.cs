@@ -264,7 +264,7 @@ namespace IsonelApi.Controllers
         public string? Cliente { get; set; }
         public string? Produto { get; set; }
         public string? EstadoAtual { get; set; }
-        public string? StatusEtapa { get; set; }
+        public string? StatusProcesso { get; set; }
         public string? Responsavel { get; set; }
         public DateTime DataInicio { get; set; }
     }
@@ -276,7 +276,7 @@ namespace IsonelApi.Controllers
         public string? Cliente { get; set; }
         public string? Produto { get; set; }
         public string? EstadoAtual { get; set; }
-        public string? StatusEtapa { get; set; }
+        public string? StatusProcesso { get; set; }
         public string? Responsavel { get; set; }
         public string? Observacao { get; set; }
         public DateTime DataInicioProcesso { get; set; }

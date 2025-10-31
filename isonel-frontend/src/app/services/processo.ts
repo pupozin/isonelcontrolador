@@ -21,4 +21,9 @@ export class ProcessoService {
   obterDetalhesProcesso(id: number): Observable<any> {
   return this.http.get<any>(`${this.apiUrl}/${id}/detalhes`);
   }
+
+  listarProcessosEtapaEmAndamento(tipoEtapa: string): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/etapa/andamento/${encodeURIComponent(tipoEtapa)}`);
+}
+
 }
