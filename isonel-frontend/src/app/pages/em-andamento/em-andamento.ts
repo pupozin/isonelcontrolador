@@ -1,8 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProcessoService } from '../../services/processo';
 import { forkJoin } from 'rxjs';
+import { ProcessoService } from '../../services/processo';
+
+interface ProcessoResumo {
+  id: number;
+  codigo: string;
+  cliente: string;
+  produto: string;
+  etapa: string;
+  status: string;
+  cor: string;
+  dataInicio: string;
+  responsavel: string;
+}
+
+interface ProcessoEtapa {
+  id: number;
+  codigo: string;
+  cliente: string;
+  responsavel: string;
+  etapa: string;
+  status: string;
+  cor: string;
+}
 
 @Component({
   selector: 'app-em-andamento',
@@ -15,9 +37,10 @@ export class EmAndamento implements OnInit {
   abaAtiva = 'geral';
   etapaAtiva = 'Venda';
 
-  processos: any[] = []; // usados na aba GERAL
-  processosFiltrados: any[] = []; // usados na aba PROCESSOS
-  processosPorEtapa: Record<string, any[]> = {};
+  processos: ProcessoResumo[] = [];
+  processosFiltrados: ProcessoEtapa[] = [];
+  processosPorEtapa: Record<string, ProcessoEtapa[]> = {};
+
   carregando = false;
   etapasCarregadas = false;
 
@@ -33,44 +56,73 @@ export class EmAndamento implements OnInit {
   novoResponsavel = '';
   materiais: any[] = [];
 
-  etapas = [
-    'Venda',
-    'Preparação',
-    'Colagem',
-    'Secagem',
-    'Dobragem',
-    'Entrega',
-    'Montagem',
-    'Ligação'
+  private readonly etapasConfig = [
+    { nome: 'Venda', parametro: 'VENDA' },
+    { nome: 'Preparacao', parametro: 'PREPARACAO' },
+    { nome: 'Colagem', parametro: 'COLAGEM' },
+    { nome: 'Secagem', parametro: 'SECAGEM' },
+    { nome: 'Dobragem', parametro: 'DOBRAGEM' },
+    { nome: 'Entrega', parametro: 'ENTREGA' },
+    { nome: 'Montagem', parametro: 'MONTAGEM' },
+    { nome: 'Ligacao', parametro: 'LIGACAO' }
   ];
+
+  readonly etapas = this.etapasConfig.map((config) => config.nome);
+
+  private readonly mapaEtapas: Record<string, string> = this.etapas.reduce((mapa, etapa) => {
+    mapa[this.removerAcentos(etapa).toLowerCase()] = etapa;
+    return mapa;
+  }, {} as Record<string, string>);
 
   constructor(private processoService: ProcessoService) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.carregarProcessos();
   }
 
-  // Carrega resumo geral
-  carregarProcessos() {
+  private removerAcentos(valor: string): string {
+    return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private corPorStatus(status?: string): string {
+    const chave = (status ?? '').toLowerCase();
+    if (chave === 'finalizado') {
+      return 'green';
+    }
+    if (chave === 'pendente') {
+      return 'gray';
+    }
+    return 'orange';
+  }
+
+  private formatarEtapa(valor?: string, padrao = ''): string {
+    if (!valor) {
+      return padrao;
+    }
+    const chave = this.removerAcentos(valor).toLowerCase();
+    const fallback = padrao || valor;
+    return this.mapaEtapas[chave] ?? fallback;
+  }
+
+  carregarProcessos(): void {
     this.carregando = true;
     this.processoService.listarProcessosAndamento().subscribe({
       next: (dados) => {
-        this.processos = dados.map((p) => ({
-          id: p.id,
-          codigo: p.codigo,
-          cliente: p.cliente,
-          produto: p.produto,
-          etapa: p.estadoAtual,
-          status: p.statusProcesso ?? 'Em andamento',
-          cor:
-            p.statusProcesso === 'Finalizado'
-              ? 'green'
-              : p.statusProcesso === 'Pendente'
-              ? 'gray'
-              : 'orange',
-          dataInicio: new Date(p.dataInicio).toLocaleString(),
-          responsavel: p.responsavel
-        }));
+        this.processos = dados.map<ProcessoResumo>((p) => {
+          const etapa = this.formatarEtapa(p.estadoAtual, 'Venda');
+          const status = p.statusProcesso ?? 'Em andamento';
+          return {
+            id: p.id,
+            codigo: p.codigo,
+            cliente: p.cliente,
+            produto: p.produto,
+            etapa,
+            status,
+            cor: this.corPorStatus(status),
+            dataInicio: new Date(p.dataInicio).toLocaleString(),
+            responsavel: p.responsavel
+          };
+        });
         this.carregando = false;
       },
       error: (err) => {
@@ -80,38 +132,38 @@ export class EmAndamento implements OnInit {
     });
   }
 
-  // Carrega todas as etapas ao abrir a aba de processos
-  private carregarTodasAsEtapas() {
+  private carregarTodasAsEtapas(): void {
     if (this.etapasCarregadas) {
       this.atualizarProcessosFiltrados();
       return;
     }
 
     this.carregando = true;
-    const requisicoes = this.etapas.map((etapa) =>
-      this.processoService.listarProcessosEtapaEmAndamento(etapa)
+    const requisicoes = this.etapasConfig.map((config) =>
+      this.processoService.listarProcessosEtapaEmAndamento(config.parametro)
     );
 
     forkJoin(requisicoes).subscribe({
       next: (listas) => {
         this.processosPorEtapa = {};
+
         listas.forEach((dados, index) => {
-          const etapa = this.etapas[index];
-          this.processosPorEtapa[etapa] = dados.map((p) => ({
-            id: p.processoId,
-            codigo: p.codigo,
-            cliente: p.cliente,
-            responsavel: p.responsavel,
-            etapa,
-            status: p.statusEtapa ?? 'Em andamento',
-            cor:
-              p.statusEtapa === 'Finalizado'
-                ? 'green'
-                : p.statusEtapa === 'Pendente'
-                ? 'gray'
-                : 'orange'
-          }));
+          const etapaConfig = this.etapasConfig[index];
+          const etapa = etapaConfig.nome;
+          this.processosPorEtapa[etapa] = dados.map<ProcessoEtapa>((p) => {
+            const status = p.statusEtapa ?? 'Em andamento';
+            return {
+              id: p.processoId,
+              codigo: p.codigo,
+              cliente: p.cliente,
+              responsavel: p.responsavel,
+              etapa,
+              status,
+              cor: this.corPorStatus(status)
+            };
+          });
         });
+
         this.etapasCarregadas = true;
         this.atualizarProcessosFiltrados();
         this.carregando = false;
@@ -123,23 +175,22 @@ export class EmAndamento implements OnInit {
     });
   }
 
-  private atualizarProcessosFiltrados() {
+  private atualizarProcessosFiltrados(): void {
     this.processosFiltrados = this.processosPorEtapa[this.etapaAtiva] ?? [];
   }
 
-  selecionarAba(aba: string) {
+  selecionarAba(aba: string): void {
     if (this.abaAtiva === aba) {
       return;
     }
 
     this.abaAtiva = aba;
-
     if (aba === 'processos') {
       this.carregarTodasAsEtapas();
     }
   }
 
-  selecionarEtapa(nome: string) {
+  selecionarEtapa(nome: string): void {
     this.etapaAtiva = nome;
 
     if (!this.etapasCarregadas) {
@@ -157,33 +208,28 @@ export class EmAndamento implements OnInit {
     }));
   }
 
-  // ========== MODAIS ==========
-  fecharModais() {
+  fecharModais(): void {
     this.modalGeralAberto = false;
     this.modalEtapaAberto = false;
     this.modalAvancarAberto = false;
     this.modalCorteAberto = false;
   }
 
-  abrirDetalhesGeral(p: any) {
+  abrirDetalhesGeral(processo: ProcessoResumo): void {
     this.fecharModais();
     this.modalGeralAberto = true;
     this.carregando = true;
 
-    this.processoService.obterDetalhesProcesso(p.id).subscribe({
+    this.processoService.obterDetalhesProcesso(processo.id).subscribe({
       next: (dados) => {
+        const status = dados.statusProcesso ?? 'Em andamento';
         this.processoSelecionado = {
           codigo: dados.codigo,
           cliente: dados.cliente,
           produto: dados.produto,
-          etapa: dados.estadoAtual,
-          status: dados.statusEtapa ?? 'Em andamento',
-          cor:
-            dados.statusEtapa === 'Finalizado'
-              ? 'green'
-              : dados.statusEtapa === 'Pendente'
-              ? 'gray'
-              : 'orange',
+          etapa: this.formatarEtapa(dados.estadoAtual, processo.etapa),
+          status,
+          cor: this.corPorStatus(status),
           dataInicio: new Date(dados.dataInicioProcesso).toLocaleString(),
           dataEtapa: new Date(dados.dataInicioEtapa).toLocaleString(),
           responsavel: dados.responsavel,
@@ -200,74 +246,105 @@ export class EmAndamento implements OnInit {
     });
   }
 
-  abrirDetalhesEtapa(p: any) {
+  abrirDetalhesEtapa(processo: ProcessoEtapa): void {
     this.fecharModais();
-    this.etapaSelecionada = { ...p };
     this.modalEtapaAberto = true;
+    this.etapaSelecionada = { ...processo };
+    this.carregando = true;
+
+    this.processoService.obterDetalhesEtapaAtual(processo.id).subscribe({
+      next: (dados) => {
+        const status = dados.statusEtapa ?? 'Em andamento';
+        this.etapaSelecionada = {
+          id: dados.processoId,
+          codigo: dados.codigo,
+          cliente: dados.cliente,
+          produto: dados.produto,
+          etapa: this.formatarEtapa(dados.tipoEtapa, processo.etapa),
+          status,
+          cor: this.corPorStatus(status),
+          dataInicio: new Date(dados.dataInicioProcesso).toLocaleString(),
+          dataEtapa: new Date(dados.dataInicioEtapa).toLocaleString(),
+          responsavel: dados.responsavel,
+          observacao: dados.observacao ?? ''
+        };
+        this.carregando = false;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar detalhes da etapa:', err);
+        this.carregando = false;
+        this.modalEtapaAberto = false;
+        alert('Erro ao carregar detalhes da etapa. Veja o console.');
+      }
+    });
   }
 
-  abrirAvancarEtapa(p: any) {
+  abrirAvancarEtapa(processo: ProcessoEtapa): void {
     this.fecharModais();
-    this.processoAvancar = { ...p };
+    this.processoAvancar = { ...processo };
     this.novoResponsavel = '';
     this.modalAvancarAberto = true;
   }
 
-  abrirModalCorte(p: any) {
+  abrirModalCorte(processo: ProcessoEtapa): void {
     this.fecharModais();
-    this.processoCorte = { ...p };
+    this.processoCorte = { ...processo };
     this.materiais = [{ material: '', altura: '', largura: '', espessura: '', quantidade: '' }];
     this.modalCorteAberto = true;
   }
 
-  fecharModalGeral() {
+  fecharModalGeral(): void {
     this.modalGeralAberto = false;
   }
-  fecharModalEtapa() {
+
+  fecharModalEtapa(): void {
     this.modalEtapaAberto = false;
   }
-  fecharModalAvancar() {
+
+  fecharModalAvancar(): void {
     this.modalAvancarAberto = false;
   }
-  fecharModalCorte() {
+
+  fecharModalCorte(): void {
     this.modalCorteAberto = false;
   }
 
-  // ========= AÇÕES ==========
-  salvarAlteracoes() {
-    console.log('Salvando alterações gerais:', this.processoSelecionado);
+  salvarAlteracoes(): void {
+    console.log('Salvando alteracoes gerais:', this.processoSelecionado);
     this.modalGeralAberto = false;
   }
 
-  salvarEtapa() {
-    console.log('Salvando alterações da etapa:', this.etapaSelecionada);
+  salvarEtapa(): void {
+    console.log('Salvando alteracoes da etapa:', this.etapaSelecionada);
     this.modalEtapaAberto = false;
   }
 
-  concluirAvanco() {
+  concluirAvanco(): void {
     if (!this.novoResponsavel.trim()) {
-      alert('Informe o responsável pela próxima etapa.');
+      alert('Informe o responsavel pela proxima etapa.');
       return;
     }
+
     console.log(
-      `Avançando ${this.processoAvancar.codigo} com o novo responsável: ${this.novoResponsavel}`
+      `Avancando ${this.processoAvancar.codigo} com o novo responsavel: ${this.novoResponsavel}`
     );
     this.modalAvancarAberto = false;
   }
 
-  adicionarLinha() {
+  adicionarLinha(): void {
     this.materiais.push({ material: '', altura: '', largura: '', espessura: '', quantidade: '' });
   }
 
-  removerLinha(index: number) {
+  removerLinha(index: number): void {
     this.materiais.splice(index, 1);
   }
 
-  concluirCorte() {
-    const invalidos = this.materiais.some(
-      (m) => !m.material || !m.altura || !m.largura || !m.espessura || !m.quantidade
+  concluirCorte(): void {
+    const existeIncompleto = this.materiais.some(
+      (item) => !item.material || !item.altura || !item.largura || !item.espessura || !item.quantidade
     );
-    if (invalidos) {
+
+    if (existeIncompleto) {
       alert('Preencha todos os campos antes de concluir.');
       return;
     }
@@ -276,9 +353,9 @@ export class EmAndamento implements OnInit {
     this.modalCorteAberto = false;
   }
 
-  finalizarProcesso(p: any) {
-    console.log(`Finalizando ${p.codigo}`);
-    p.status = 'Finalizado';
-    p.cor = 'green';
+  finalizarProcesso(processo: ProcessoResumo | ProcessoEtapa): void {
+    console.log(`Finalizando ${processo.codigo}`);
+    processo.status = 'Finalizado';
+    processo.cor = 'green';
   }
 }

@@ -1,18 +1,16 @@
 <div class="em-andamento-container container">
-
-  <!-- LOADING PRINCIPAL -->
   <div class="loading-overlay" *ngIf="carregando">
     <div class="spinner"></div>
     <p>Carregando processos...</p>
   </div>
 
-  <!-- Abas principais -->
   <div class="tabs">
     <button class="tab" [class.active]="abaAtiva === 'geral'" (click)="selecionarAba('geral')">Geral</button>
-    <button class="tab" [class.active]="abaAtiva === 'processos'" (click)="selecionarAba('processos')">Processos</button>
+    <button class="tab" [class.active]="abaAtiva === 'processos'" (click)="selecionarAba('processos')">
+      Processos
+    </button>
   </div>
 
-  <!-- Aba 1: Geral -->
   <div *ngIf="abaAtiva === 'geral'" class="aba-geral">
     <h2 class="titulo">Ativos: {{ processos.length }}</h2>
 
@@ -24,14 +22,13 @@
         <p><i class="fa-solid fa-calendar-days"></i> Iniciado: {{ p.dataInicio }}</p>
         <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ p.cliente }}</p>
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
-        <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsável: {{ p.responsavel }}</p>
+        <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsavel: {{ p.responsavel }}</p>
 
         <button class="btn-detalhes" (click)="abrirDetalhesGeral(p)">Detalhes</button>
       </div>
     </div>
   </div>
 
-  <!-- Aba 2: Processos -->
   <div *ngIf="abaAtiva === 'processos'" class="aba-processos">
     <div class="abas-internas">
       <button
@@ -49,25 +46,17 @@
         <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
         <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
-        <button *ngIf="p.etapa === 'Preparação'" class="btn-corte" (click)="abrirModalCorte(p)">Corte</button>
-        <button
-          *ngIf="p.etapa !== 'Ligação'"
-          class="btn-acao"
-          (click)="abrirAvancarEtapa(p)">
-          Avançar etapa
+        <button *ngIf="p.etapa === 'Preparacao'" class="btn-corte" (click)="abrirModalCorte(p)">Corte</button>
+        <button *ngIf="p.etapa !== 'Ligacao'" class="btn-acao" (click)="abrirAvancarEtapa(p)">
+          Avancar etapa
         </button>
-
-        <button
-          *ngIf="p.etapa === 'Ligação'"
-          class="btn-acao btn-finalizar"
-          (click)="finalizarProcesso(p)">
+        <button *ngIf="p.etapa === 'Ligacao'" class="btn-acao btn-finalizar" (click)="finalizarProcesso(p)">
           Finalizar processo
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Detalhes Geral -->
   <ng-container *ngIf="modalGeralAberto">
     <div class="modal-overlay" (click)="fecharModalGeral()">
       <div class="modal-detalhes" (click)="$event.stopPropagation()">
@@ -90,11 +79,11 @@
         <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processoSelecionado?.cliente }}</p>
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processoSelecionado?.produto }}</p>
         <p>
-          <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
+          <i class="fa-solid fa-user-gear"></i> Responsavel pela etapa:
           <input class="input-responsavel" type="text" [(ngModel)]="processoSelecionado.responsavel" />
         </p>
 
-        <label>Observação</label>
+        <label>Observacao</label>
         <textarea [(ngModel)]="processoSelecionado.observacao" placeholder="Digite aqui..."></textarea>
 
         <div class="modal-actions">
@@ -105,11 +94,10 @@
     </div>
   </ng-container>
 
-  <!-- Modal: Detalhes Etapa -->
   <ng-container *ngIf="modalEtapaAberto">
     <div class="modal-overlay" (click)="fecharModalEtapa()">
       <div class="modal-detalhes" (click)="$event.stopPropagation()">
-        <h2>Detalhes da Etapa</h2>
+        <h2>Detalhes da etapa</h2>
 
         <h3>{{ etapaSelecionada?.codigo }}</h3>
 
@@ -125,14 +113,14 @@
         <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ etapaSelecionada?.etapa }}</p>
         <p><i class="fa-solid fa-calendar-days"></i> Processo iniciado: {{ etapaSelecionada?.dataInicio }}</p>
         <p><i class="fa-solid fa-calendar-days"></i> Etapa iniciada: {{ etapaSelecionada?.dataEtapa }}</p>
-        <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processoSelecionado?.cliente }}</p>
-        <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processoSelecionado?.produto }}</p>
+        <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ etapaSelecionada?.cliente }}</p>
+        <p><i class="fa-solid fa-box-archive"></i> Produto: {{ etapaSelecionada?.produto }}</p>
         <p>
-          <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
+          <i class="fa-solid fa-user-gear"></i> Responsavel pela etapa:
           <input class="input-responsavel" type="text" [(ngModel)]="etapaSelecionada.responsavel" />
         </p>
 
-        <label>Observação</label>
+        <label>Observacao</label>
         <textarea [(ngModel)]="etapaSelecionada.observacao" placeholder="Digite aqui..."></textarea>
 
         <div class="modal-actions">
@@ -143,16 +131,15 @@
     </div>
   </ng-container>
 
-  <!-- Modal: Avançar Etapa -->
   <div class="modal-overlay" *ngIf="modalAvancarAberto" (click)="fecharModalAvancar()">
     <div class="modal-avancar" (click)="$event.stopPropagation()">
-      <h2>Avançar etapa</h2>
+      <h2>Avancar etapa</h2>
 
-      <p>Insira o responsável pela próxima etapa</p>
+      <p>Insira o responsavel pela proxima etapa</p>
       <input
         type="text"
         [(ngModel)]="novoResponsavel"
-        placeholder="Nome do responsável"
+        placeholder="Nome do responsavel"
         class="input-responsavel"
       />
 
@@ -163,7 +150,6 @@
     </div>
   </div>
 
-  <!-- Modal: Corte -->
   <div class="modal-overlay" *ngIf="modalCorteAberto" (click)="fecharModalCorte()">
     <div class="modal-corte" (click)="$event.stopPropagation()">
       <h2>Corte</h2>
@@ -175,8 +161,6 @@
           <input type="number" [(ngModel)]="item.largura" placeholder="Largura" />
           <input type="number" [(ngModel)]="item.espessura" placeholder="Espessura" />
           <input type="number" [(ngModel)]="item.quantidade" placeholder="Quantidade" />
-
-          <!-- botão remover linha -->
           <button class="btn-add" (click)="removerLinha(i)">&times;</button>
         </div>
 
@@ -189,5 +173,4 @@
       </div>
     </div>
   </div>
-
 </div>

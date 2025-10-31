@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ProcessoService {
-  private apiUrl = 'https://localhost:7137/api/Processo'; // 🔹 Ajuste se sua API usar outra porta
+  private apiUrl = 'https://localhost:7137/api/Processo'; // Ajuste se a API usar outra porta
 
   constructor(private http: HttpClient) {}
 
@@ -19,11 +19,14 @@ export class ProcessoService {
   }
 
   obterDetalhesProcesso(id: number): Observable<any> {
-  return this.http.get<any>(`${this.apiUrl}/${id}/detalhes`);
+    return this.http.get<any>(`${this.apiUrl}/${id}/detalhes`);
   }
 
   listarProcessosEtapaEmAndamento(tipoEtapa: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/etapa/andamento/${encodeURIComponent(tipoEtapa)}`);
-}
+    return this.http.get<any[]>(`${this.apiUrl}/etapa/andamento/${encodeURIComponent(tipoEtapa)}`);
+  }
 
+  obterDetalhesEtapaAtual(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/detalhes-etapa`);
+  }
 }
