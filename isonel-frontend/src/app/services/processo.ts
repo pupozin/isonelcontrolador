@@ -68,16 +68,14 @@ export class ProcessoService {
 
   salvarDetalhesPreparacao(payload: {
     etapaId: number;
-    materiais: Array<{
-      tipoMaterial: string;
-      comprimento: number;
-      largura: number;
-      altura: number;
-      espessura: number;
-      quantidade: number;
-    }>;
+    tipoMaterial: string;
+    comprimento: number;
+    largura: number;
+    altura: number;
+    espessura: number;
+    quantidade: number;
   }): Observable<any> {
-    return this.http.post<any>(`${this.detalhesPreparacaoUrl}/salvar-lote`, payload);
+    return this.http.post<any>(`${this.detalhesPreparacaoUrl}`, payload);
   }
 
   notificarAtualizacaoProcessos(): void {

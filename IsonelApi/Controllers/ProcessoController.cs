@@ -313,6 +313,7 @@ namespace IsonelApi.Controllers
     public class MaterialPreparacaoDto
     {
         public string TipoMaterial { get; set; } = string.Empty;
+        public decimal Comprimento { get; set; }  
         public decimal Altura { get; set; }
         public decimal Espessura { get; set; }
         public decimal Largura { get; set; }

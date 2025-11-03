@@ -70,7 +70,6 @@ export class EmAndamento implements OnInit, OnDestroy {
   private etapaDetalhesRaw: any = null;
   private subscriptions = new Subscription();
   private carregandoContador = 0;
-  private materiaisCache: Record<number, MaterialCorte[]> = {};
 
   private readonly etapasConfig = [
     { nome: 'Venda', parametro: 'VENDA' },
@@ -154,6 +153,20 @@ export class EmAndamento implements OnInit, OnDestroy {
       return '';
     }
     return Number.isFinite(Number(valor)) ? String(valor) : '';
+  }
+
+  private normalizarMaterialServidor(item: any): MaterialCorte {
+    const altura = this.formatarNumero(
+      item?.altura ?? item?.Altura ?? item?.comprimento ?? item?.Comprimento
+    );
+    return {
+      material: item?.tipoMaterial ?? item?.TipoMaterial ?? '',
+      altura,
+      largura: this.formatarNumero(item?.largura ?? item?.Largura),
+      espessura: this.formatarNumero(item?.espessura ?? item?.Espessura),
+      quantidade: this.formatarNumero(item?.quantidade ?? item?.Quantidade),
+      readonly: true
+    };
   }
 
   podeRemoverMaterial(item: MaterialCorte): boolean {
@@ -405,7 +418,6 @@ export class EmAndamento implements OnInit, OnDestroy {
   }
 
   private recarregarDadosPosAcao(): void {
-    this.materiaisCache = {};
     this.etapasCarregadas = false;
     this.carregarProcessos();
     if (this.abaAtiva === 'processos') {
@@ -522,42 +534,19 @@ export class EmAndamento implements OnInit, OnDestroy {
 
   abrirModalCorte(processo: ProcessoEtapa): void {
     this.fecharModais();
-    const etapaId = this.extrairEtapaId(processo) ?? processo.etapaId;
-    this.processoCorte = { ...processo, etapaId: etapaId ?? processo.etapaId };
+    const etapaId = this.extrairEtapaId(processo) ?? processo.etapaId ?? undefined;
+    this.processoCorte = { ...processo, etapaId };
+    this.materiais = [this.criarMaterialEmBranco()];
     this.modalCorteAberto = true;
 
-    const processoId = processo.id;
-    const cache = this.materiaisCache[processoId];
-    if (cache?.length) {
-      this.materiais = [...cache.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
-      return;
-    }
-
-    this.materiais = [this.criarMaterialEmBranco()];
     this.iniciarCarregamento();
-
     this.processoService.obterDetalhesPreparacao(processo.id).subscribe({
       next: (lista) => {
-        const materiaisExistentes = (lista ?? []).map<MaterialCorte>((item: any) => {
-          const altura = this.formatarNumero(
-            item?.altura ?? item?.Altura ?? item?.comprimento ?? item?.Comprimento
-          );
-          return {
-            material: item?.tipoMaterial ?? item?.TipoMaterial ?? '',
-            altura,
-            largura: this.formatarNumero(item?.largura ?? item?.Largura),
-            espessura: this.formatarNumero(item?.espessura ?? item?.Espessura),
-            quantidade: this.formatarNumero(item?.quantidade ?? item?.Quantidade),
-            readonly: true
-          };
-        });
-
-        this.materiaisCache[processoId] = materiaisExistentes.map((item) => ({ ...item }));
-
-        if (materiaisExistentes.length) {
-          this.materiais = [...materiaisExistentes.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
-        }
-
+        const materiaisExistentes = (lista ?? []).map((item) => this.normalizarMaterialServidor(item));
+        this.materiais =
+          materiaisExistentes.length > 0
+            ? [...materiaisExistentes, this.criarMaterialEmBranco()]
+            : [this.criarMaterialEmBranco()];
         this.finalizarCarregamento();
       },
       error: (err) => {
@@ -581,14 +570,9 @@ export class EmAndamento implements OnInit, OnDestroy {
   }
 
   fecharModalCorte(): void {
-    const processoId = this.processoCorte?.id;
     this.modalCorteAberto = false;
     this.processoCorte = null;
-    if (processoId && this.materiaisCache[processoId]?.length) {
-      this.materiais = this.materiaisCache[processoId].map((item) => ({ ...item }));
-    } else {
-      this.materiais = [];
-    }
+    this.materiais = [this.criarMaterialEmBranco()];
   }
 
   salvarAlteracoes(): void {
@@ -833,8 +817,6 @@ export class EmAndamento implements OnInit, OnDestroy {
       return;
     }
 
-    const processoId = this.processoCorte.id;
-
     const materiaisValidos = this.materiais
       .filter((item) => {
         const possuiDados =
@@ -879,20 +861,20 @@ export class EmAndamento implements OnInit, OnDestroy {
     const etapaIdAtual = this.processoCorte.etapaId ?? null;
     this.iniciarCarregamento();
 
-    const salvar = (etapaId: number) => {
-      const payload = {
-        etapaId,
-        materiais: materiaisValidos.map((item) => ({
+    const salvarMateriais = (etapaId: number) => {
+      const requisicoes = materiaisValidos.map((item) =>
+        this.processoService.salvarDetalhesPreparacao({
+          etapaId,
           tipoMaterial: item.material,
           comprimento: item.altura,
           largura: item.largura,
           altura: item.altura,
           espessura: item.espessura,
           quantidade: item.quantidade
-        }))
-      };
+        })
+      );
 
-      this.processoService.salvarDetalhesPreparacao(payload).subscribe({
+      forkJoin(requisicoes).subscribe({
         next: () => {
           this.finalizarCarregamento();
           const materiaisPersistidos = materiaisValidos.map<MaterialCorte>((item) => ({
@@ -903,7 +885,6 @@ export class EmAndamento implements OnInit, OnDestroy {
             quantidade: String(item.quantidade),
             readonly: true
           }));
-          this.materiaisCache[processoId] = materiaisPersistidos.map((item) => ({ ...item }));
           this.materiais = [...materiaisPersistidos.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
           console.log('Detalhes de corte salvos com sucesso.');
         },
@@ -916,7 +897,7 @@ export class EmAndamento implements OnInit, OnDestroy {
     };
 
     if (etapaIdAtual) {
-      salvar(etapaIdAtual);
+      salvarMateriais(etapaIdAtual);
       return;
     }
 
@@ -931,7 +912,7 @@ export class EmAndamento implements OnInit, OnDestroy {
         }
 
         this.processoCorte.etapaId = etapaId;
-        salvar(etapaId);
+        salvarMateriais(etapaId);
       },
       error: (erro) => {
         console.error('Erro ao tentar identificar a etapa de corte:', erro);
