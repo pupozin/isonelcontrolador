@@ -47,10 +47,10 @@
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
         <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
         <button *ngIf="exibeBotaoCorte(p.etapa)" class="btn-corte" (click)="abrirModalCorte(p)">Corte</button>
-        <button *ngIf="p.etapa !== 'Ligacao'" class="btn-acao" (click)="abrirAvancarEtapa(p)">
+        <button *ngIf="p.etapa !== 'Ligação'" class="btn-acao" (click)="abrirAvancarEtapa(p)">
           Avançar etapa
         </button>
-        <button *ngIf="p.etapa === 'Ligacao'" class="btn-acao btn-finalizar" (click)="finalizarProcesso(p)">
+        <button *ngIf="p.etapa === 'Ligação'" class="btn-acao btn-finalizar" (click)="finalizarProcesso(p)">
           Finalizar processo
         </button>
       </div>

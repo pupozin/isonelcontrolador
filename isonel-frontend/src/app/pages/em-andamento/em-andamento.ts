@@ -79,7 +79,7 @@ export class EmAndamento implements OnInit, OnDestroy {
     { nome: 'Dobragem', parametro: 'DOBRAGEM' },
     { nome: 'Entrega', parametro: 'ENTREGA' },
     { nome: 'Montagem', parametro: 'MONTAGEM' },
-    { nome: 'Ligacao', parametro: 'LIGACAO' }
+    { nome: 'Ligação', parametro: 'LIGAÇÃO' }
   ];
 
   readonly etapas = this.etapasConfig.map((config) => config.nome);

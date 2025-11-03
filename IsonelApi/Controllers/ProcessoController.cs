@@ -1,4 +1,5 @@
-﻿using IsonelApi.Data;
+﻿using System;
+using IsonelApi.Data;
 using IsonelApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -83,7 +84,15 @@ namespace IsonelApi.Controllers
                 processo.Observacao = dto.Observacao;
 
             if (!string.IsNullOrWhiteSpace(dto.StatusAtual))
-                processo.StatusAtual = dto.StatusAtual;
+            {
+                var statusAtual = dto.StatusAtual.Trim();
+                processo.StatusAtual = statusAtual;
+
+                if (string.Equals(statusAtual, "Finalizado", StringComparison.OrdinalIgnoreCase))
+                {
+                    processo.DataFim = DateTime.Now;
+                }
+            }
 
             _context.SaveChanges();
 
@@ -322,3 +331,4 @@ namespace IsonelApi.Controllers
 
 
 }
+
