@@ -286,6 +286,7 @@ namespace IsonelApi.Controllers
     public class ProcessoEtapaEmAndamentoDto
     {
         public int ProcessoId { get; set; }
+        public int EtapaId { get; set; }
         public string Codigo { get; set; } = string.Empty;
         public string Cliente { get; set; } = string.Empty;
         public string Responsavel { get; set; } = string.Empty;
@@ -295,6 +296,7 @@ namespace IsonelApi.Controllers
     public class DetalhesEtapaAtualDto
     {
         public int ProcessoId { get; set; }
+        public int EtapaId { get; set; }
         public string Codigo { get; set; } = string.Empty;
         public string Cliente { get; set; } = string.Empty;
         public string Produto { get; set; } = string.Empty;

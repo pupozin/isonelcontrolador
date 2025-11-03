@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { ProcessoService } from '../../services/processo';
 
 interface ProcessoResumo {
@@ -18,6 +19,7 @@ interface ProcessoResumo {
 
 interface ProcessoEtapa {
   id: number;
+  etapaId?: number;
   codigo: string;
   cliente: string;
   responsavel: string;
@@ -55,6 +57,7 @@ export class EmAndamento implements OnInit {
   processoCorte: any = null;
   novoResponsavel = '';
   materiais: any[] = [];
+  private etapaDetalhesRaw: any = null;
 
   private readonly etapasConfig = [
     { nome: 'Venda', parametro: 'VENDA' },
@@ -102,6 +105,137 @@ export class EmAndamento implements OnInit {
     const chave = this.removerAcentos(valor).toLowerCase();
     const fallback = padrao || valor;
     return this.mapaEtapas[chave] ?? fallback;
+  }
+
+  private extrairEtapaId(fonte: any): number | null {
+    if (!fonte) {
+      return null;
+    }
+    const chaves = [
+      'etapaId',
+      'EtapaId',
+      'etapaID',
+      'EtapaID',
+      'idEtapa',
+      'IdEtapa',
+      'IDEtapa',
+      'etapa_id',
+      'etapaAtualId',
+      'EtapaAtualId',
+      'etapaAtualID',
+      'EtapaAtualID',
+      'idEtapaAtual',
+      'IdEtapaAtual'
+    ];
+    for (const chave of chaves) {
+      const valor = fonte[chave];
+      if (typeof valor === 'number' && !Number.isNaN(valor) && valor > 0) {
+        return valor;
+      }
+      if (typeof valor === 'string') {
+        const convertido = Number(valor);
+        if (!Number.isNaN(convertido) && convertido > 0) {
+          return convertido;
+        }
+      }
+    }
+
+    const valorId = fonte.id ?? fonte.Id;
+    if (
+      typeof valorId === 'number' &&
+      !Number.isNaN(valorId) &&
+      valorId > 0 &&
+      valorId !== fonte.processoId &&
+      valorId !== fonte.ProcessoId
+    ) {
+      return valorId;
+    }
+
+    return null;
+  }
+
+  private obterProximaEtapaConfig(nomeAtual: string): { nome: string; parametro: string } | null {
+    const chave = this.removerAcentos(nomeAtual).toLowerCase();
+    const indice = this.etapasConfig.findIndex(
+      (config) => this.removerAcentos(config.nome).toLowerCase() === chave
+    );
+    if (indice >= 0 && indice < this.etapasConfig.length - 1) {
+      return this.etapasConfig[indice + 1];
+    }
+    return null;
+  }
+
+  private resolverEtapaId(processoId: number, etapaNome: string) {
+    const chave = this.removerAcentos(etapaNome).toLowerCase();
+    const etapaConfig = this.etapasConfig.find(
+      (config) => this.removerAcentos(config.nome).toLowerCase() === chave
+    );
+    const parametro = etapaConfig?.parametro ?? this.removerAcentos(etapaNome).toUpperCase();
+
+    return this.processoService.listarProcessosEtapaEmAndamento(parametro).pipe(
+      map((lista) => {
+        const item = (lista ?? []).find((entrada) => {
+          const candidatos = [
+            entrada?.processoId,
+            entrada?.ProcessoId,
+            entrada?.idProcesso,
+            entrada?.IdProcesso,
+            entrada?.processoID
+          ];
+
+          return candidatos
+            .map((valor) => (typeof valor === 'number' ? valor : Number(valor)))
+            .some((valor) => !Number.isNaN(valor) && valor === processoId);
+        });
+
+        if (!item) {
+          return null;
+        }
+
+        const encontrado = this.extrairEtapaId(item);
+        return encontrado ?? null;
+      }),
+      catchError((erro) => {
+        console.error('Erro ao tentar resolver o identificador da etapa:', erro);
+        return of(null);
+      })
+    );
+  }
+
+  private buscarEtapaAtual(processoId: number) {
+    return this.processoService.obterDetalhesEtapa(processoId).pipe(
+      switchMap((dados) => {
+        const etapaIdDetalhe = this.extrairEtapaId(dados);
+        if (etapaIdDetalhe) {
+          return of({ etapaId: etapaIdDetalhe, dados });
+        }
+
+        const tipoEtapa = dados?.tipoEtapa ?? dados?.TipoEtapa ?? '';
+        if (!tipoEtapa) {
+          console.warn(
+            'Detalhes da etapa nao informaram o tipo da etapa. Retornando sem identificador.',
+            dados
+          );
+          return of({ etapaId: null, dados });
+        }
+
+        return this.resolverEtapaId(processoId, tipoEtapa).pipe(
+          map((etapaId) => {
+            if (!etapaId) {
+              console.warn(
+                'Nao foi possivel inferir o identificador da etapa a partir do mapeamento adicional.',
+                dados
+              );
+            }
+            return { etapaId: etapaId ?? null, dados };
+          })
+        );
+      }),
+      catchError((erro) => {
+        console.error('Erro ao recuperar detalhes da etapa:', erro);
+        return of({ etapaId: null, dados: null });
+      })
+    );
   }
 
   exibeBotaoCorte(etapa?: string): boolean {
@@ -159,8 +293,10 @@ export class EmAndamento implements OnInit {
           const etapa = etapaConfig.nome;
           this.processosPorEtapa[etapa] = dados.map<ProcessoEtapa>((p) => {
             const status = p.statusEtapa ?? 'Em andamento';
+            const etapaId = this.extrairEtapaId(p);
             return {
               id: p.processoId,
+              etapaId: etapaId ?? undefined,
               codigo: p.codigo,
               cliente: p.cliente,
               responsavel: p.responsavel,
@@ -208,6 +344,14 @@ export class EmAndamento implements OnInit {
     this.atualizarProcessosFiltrados();
   }
 
+  private recarregarDadosPosAcao(): void {
+    this.etapasCarregadas = false;
+    this.carregarProcessos();
+    if (this.abaAtiva === 'processos') {
+      this.carregarTodasAsEtapas();
+    }
+  }
+
   get etapasResumo() {
     return this.etapas.map((nome) => ({
       nome,
@@ -231,6 +375,7 @@ export class EmAndamento implements OnInit {
       next: (dados) => {
         const status = dados.statusProcesso ?? 'Em andamento';
         this.processoSelecionado = {
+          id: dados.id ?? processo.id,
           codigo: dados.codigo,
           cliente: dados.cliente,
           produto: dados.produto,
@@ -256,14 +401,20 @@ export class EmAndamento implements OnInit {
   abrirDetalhesEtapa(processo: ProcessoEtapa): void {
     this.fecharModais();
     this.modalEtapaAberto = true;
-    this.etapaSelecionada = { ...processo };
+    const etapaIdAtual = this.extrairEtapaId(processo);
+    this.etapaSelecionada = { ...processo, etapaId: etapaIdAtual ?? processo.etapaId };
     this.carregando = true;
+    this.etapaDetalhesRaw = null;
 
-    this.processoService.obterDetalhesEtapaAtual(processo.id).subscribe({
+    this.processoService.obterDetalhesEtapa(processo.id).subscribe({
       next: (dados) => {
         const status = dados.statusEtapa ?? 'Em andamento';
+        this.etapaDetalhesRaw = dados;
+        const etapaIdDetalhe = this.extrairEtapaId(dados) ?? etapaIdAtual ?? null;
+
         this.etapaSelecionada = {
-          id: dados.processoId,
+          id: dados.processoId ?? processo.id,
+          etapaId: etapaIdDetalhe ?? undefined,
           codigo: dados.codigo,
           cliente: dados.cliente,
           produto: dados.produto,
@@ -275,6 +426,21 @@ export class EmAndamento implements OnInit {
           responsavel: dados.responsavel,
           observacao: dados.observacao ?? ''
         };
+
+        if (!this.etapaSelecionada.etapaId) {
+          console.warn('Detalhes da etapa nao trouxeram identificador. Tentando recuperar via fallback.');
+          this.resolverEtapaId(this.etapaSelecionada.id, this.etapaSelecionada.etapa).subscribe({
+            next: (etapaId) => {
+              if (etapaId) {
+                this.etapaSelecionada = { ...this.etapaSelecionada, etapaId };
+              }
+            },
+            error: (erro) => {
+              console.warn('Falha ao resolver identificador da etapa:', erro);
+            }
+          });
+        }
+
         this.carregando = false;
       },
       error: (err) => {
@@ -306,6 +472,7 @@ export class EmAndamento implements OnInit {
 
   fecharModalEtapa(): void {
     this.modalEtapaAberto = false;
+    this.etapaDetalhesRaw = null;
   }
 
   fecharModalAvancar(): void {
@@ -317,25 +484,160 @@ export class EmAndamento implements OnInit {
   }
 
   salvarAlteracoes(): void {
-    console.log('Salvando alteracoes gerais:', this.processoSelecionado);
-    this.modalGeralAberto = false;
+    if (!this.processoSelecionado?.id) {
+      return;
+    }
+
+    this.carregando = true;
+
+    const payload: { statusAtual: string; observacao: string; responsavel?: string } = {
+      statusAtual: this.processoSelecionado.status,
+      observacao: this.processoSelecionado.observacao ?? ''
+    };
+
+    if (this.processoSelecionado.responsavel) {
+      const responsavel = this.processoSelecionado.responsavel.trim();
+      if (responsavel) {
+        payload.responsavel = responsavel;
+      }
+    }
+
+    this.processoService.atualizarProcesso(this.processoSelecionado.id, payload).subscribe({
+      next: () => {
+        console.log(`Processo ${this.processoSelecionado.codigo} atualizado.`);
+        this.modalGeralAberto = false;
+        this.carregarProcessos();
+      },
+      error: (err) => {
+        console.error('Erro ao salvar alteracoes do processo:', err);
+        this.carregando = false;
+        alert('Nao foi possivel salvar as alteracoes. Veja o console.');
+      }
+    });
   }
 
   salvarEtapa(): void {
-    console.log('Salvando alteracoes da etapa:', this.etapaSelecionada);
-    this.modalEtapaAberto = false;
+    if (!this.etapaSelecionada?.id || !this.etapaSelecionada?.etapa) {
+      console.error('Dados da etapa selecionada estao incompletos.');
+      alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
+      return;
+    }
+
+    const processoId = this.etapaSelecionada.id;
+    const etapaIdAtual =
+      this.etapaSelecionada.etapaId ??
+      this.extrairEtapaId(this.etapaSelecionada) ??
+      this.extrairEtapaId(this.etapaDetalhesRaw);
+
+    this.carregando = true;
+
+    const statusNormalizado = (this.etapaSelecionada.status ?? '').trim() || 'Em andamento';
+    const payload: {
+      status?: string;
+      statusEtapa?: string;
+      observacao: string;
+      responsavel?: string;
+    } = {
+      status: statusNormalizado,
+      statusEtapa: statusNormalizado,
+      observacao: this.etapaSelecionada.observacao?.trim() ?? ''
+    };
+
+    const responsavel = this.etapaSelecionada.responsavel?.trim();
+    if (responsavel) {
+      payload.responsavel = responsavel;
+    }
+
+    const concluirAtualizacao = (etapaId: number) => {
+      this.processoService.atualizarEtapa(etapaId, payload).subscribe({
+        next: () => {
+          console.log(
+            `Etapa ${this.etapaSelecionada.etapa} do processo ${this.etapaSelecionada.codigo} atualizada.`
+          );
+          this.modalEtapaAberto = false;
+          this.recarregarDadosPosAcao();
+        },
+        error: (err) => {
+          console.error('Erro ao salvar alteracoes da etapa:', err);
+          this.carregando = false;
+          alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
+        }
+      });
+    };
+
+    if (etapaIdAtual) {
+      this.etapaSelecionada.etapaId = etapaIdAtual;
+      concluirAtualizacao(etapaIdAtual);
+      return;
+    }
+
+    this.buscarEtapaAtual(processoId).subscribe({
+      next: ({ etapaId, dados }) => {
+        if (!etapaId) {
+          console.error('Nao foi possivel identificar a etapa selecionada para atualizacao.');
+          this.carregando = false;
+          alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
+          return;
+        }
+
+        this.etapaDetalhesRaw = dados;
+        this.etapaSelecionada.etapaId = etapaId;
+        concluirAtualizacao(etapaId);
+      },
+      error: (err) => {
+        console.error('Erro ao buscar os dados da etapa para atualizacao:', err);
+        this.carregando = false;
+        alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
+      }
+    });
   }
 
   concluirAvanco(): void {
-    if (!this.novoResponsavel.trim()) {
+    const responsavel = this.novoResponsavel.trim();
+    if (!responsavel) {
       alert('Informe o responsavel pela proxima etapa.');
       return;
     }
 
-    console.log(
-      `Avancando ${this.processoAvancar.codigo} com o novo responsavel: ${this.novoResponsavel}`
-    );
-    this.modalAvancarAberto = false;
+    if (!this.processoAvancar?.id || !this.processoAvancar?.etapa) {
+      console.error('Dados insuficientes para avancar a etapa.');
+      return;
+    }
+
+    const processoId = this.processoAvancar.id;
+    const processoCodigo = this.processoAvancar.codigo;
+    const etapaAtualNome = this.processoAvancar.etapa;
+
+    this.carregando = true;
+
+    const proximaConfig = this.obterProximaEtapaConfig(etapaAtualNome);
+    const proximaEtapaNome = proximaConfig?.nome ?? etapaAtualNome;
+    const proximaEtapaParametro =
+      proximaConfig?.parametro ?? this.removerAcentos(etapaAtualNome).toUpperCase();
+
+    const payloadAvanco = {
+      responsavel,
+      proximaEtapa: proximaEtapaParametro,
+      observacao: ''
+    };
+
+    this.processoService.avancarEtapa(processoId, payloadAvanco).subscribe({
+      next: (resposta) => {
+        console.log(
+          `Processo ${processoCodigo} avancado para ${proximaEtapaNome} com responsavel ${responsavel}.`,
+          resposta
+        );
+        this.modalAvancarAberto = false;
+        this.processoAvancar = null;
+        this.novoResponsavel = '';
+        this.recarregarDadosPosAcao();
+      },
+      error: (err) => {
+        console.error('Erro ao avancar etapa do processo:', err);
+        this.carregando = false;
+        alert('Nao foi possivel avancar a etapa. Veja o console.');
+      }
+    });
   }
 
   adicionarLinha(): void {
@@ -361,8 +663,35 @@ export class EmAndamento implements OnInit {
   }
 
   finalizarProcesso(processo: ProcessoResumo | ProcessoEtapa): void {
-    console.log(`Finalizando ${processo.codigo}`);
-    processo.status = 'Finalizado';
-    processo.cor = 'green';
+    if (!processo?.id) {
+      console.error('Nao foi possivel identificar o processo para finalizacao.');
+      return;
+    }
+
+    this.carregando = true;
+
+    const payload: { statusAtual: string; observacao: string; responsavel?: string } = {
+      statusAtual: 'Finalizado',
+      observacao: ''
+    };
+
+    const responsavel = processo.responsavel?.trim();
+    if (responsavel) {
+      payload.responsavel = responsavel;
+    }
+
+    this.processoService.atualizarProcesso(processo.id, payload).subscribe({
+      next: () => {
+        console.log(`Processo ${processo.codigo} finalizado.`);
+        this.recarregarDadosPosAcao();
+      },
+      error: (err) => {
+        console.error('Erro ao finalizar processo:', err);
+        this.carregando = false;
+        alert('Nao foi possivel finalizar o processo. Veja o console.');
+      }
+    });
   }
 }
+
+
