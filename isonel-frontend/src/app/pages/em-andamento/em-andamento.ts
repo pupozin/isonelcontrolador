@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { ProcessoService } from '../../services/processo';
 
@@ -28,6 +28,16 @@ interface ProcessoEtapa {
   cor: string;
 }
 
+interface MaterialCorte {
+  id?: number;
+  material: string;
+  altura: string;
+  largura: string;
+  espessura: string;
+  quantidade: string;
+  readonly?: boolean;
+}
+
 @Component({
   selector: 'app-em-andamento',
   standalone: true,
@@ -35,7 +45,7 @@ interface ProcessoEtapa {
   templateUrl: './em-andamento.html',
   styleUrls: ['./em-andamento.scss']
 })
-export class EmAndamento implements OnInit {
+export class EmAndamento implements OnInit, OnDestroy {
   abaAtiva = 'geral';
   etapaAtiva = 'Venda';
 
@@ -56,8 +66,11 @@ export class EmAndamento implements OnInit {
   processoAvancar: any = null;
   processoCorte: any = null;
   novoResponsavel = '';
-  materiais: any[] = [];
+  materiais: MaterialCorte[] = [];
   private etapaDetalhesRaw: any = null;
+  private subscriptions = new Subscription();
+  private carregandoContador = 0;
+  private materiaisCache: Record<number, MaterialCorte[]> = {};
 
   private readonly etapasConfig = [
     { nome: 'Venda', parametro: 'VENDA' },
@@ -77,10 +90,21 @@ export class EmAndamento implements OnInit {
     return mapa;
   }, {} as Record<string, string>);
 
-  constructor(private processoService: ProcessoService) {}
+  constructor(private processoService: ProcessoService) {
+    this.materiais = [this.criarMaterialEmBranco()];
+  }
 
   ngOnInit(): void {
     this.carregarProcessos();
+    this.subscriptions.add(
+      this.processoService.processosAtualizados$.subscribe(() => {
+        this.recarregarDadosPosAcao();
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   private removerAcentos(valor: string): string {
@@ -105,6 +129,42 @@ export class EmAndamento implements OnInit {
     const chave = this.removerAcentos(valor).toLowerCase();
     const fallback = padrao || valor;
     return this.mapaEtapas[chave] ?? fallback;
+  }
+
+  private iniciarCarregamento(): void {
+    this.carregandoContador += 1;
+    if (this.carregandoContador === 1) {
+      this.carregando = true;
+    }
+  }
+
+  private finalizarCarregamento(): void {
+    this.carregandoContador = Math.max(0, this.carregandoContador - 1);
+    if (this.carregandoContador === 0) {
+      this.carregando = false;
+    }
+  }
+
+  private criarMaterialEmBranco(): MaterialCorte {
+    return { material: '', altura: '', largura: '', espessura: '', quantidade: '', readonly: false };
+  }
+
+  private formatarNumero(valor?: number): string {
+    if (valor === null || valor === undefined) {
+      return '';
+    }
+    return Number.isFinite(Number(valor)) ? String(valor) : '';
+  }
+
+  podeRemoverMaterial(item: MaterialCorte): boolean {
+    const possuiDados =
+      !!item.material?.trim() ||
+      !!item.altura?.trim() ||
+      !!item.largura?.trim() ||
+      !!item.espessura?.trim() ||
+      !!item.quantidade?.trim();
+
+    return !item.readonly && !possuiDados;
   }
 
   private extrairEtapaId(fonte: any): number | null {
@@ -246,7 +306,7 @@ export class EmAndamento implements OnInit {
   }
 
   carregarProcessos(): void {
-    this.carregando = true;
+    this.iniciarCarregamento();
     this.processoService.listarProcessosAndamento().subscribe({
       next: (dados) => {
         this.processos = dados.map<ProcessoResumo>((p) => {
@@ -264,11 +324,11 @@ export class EmAndamento implements OnInit {
             responsavel: p.responsavel
           };
         });
-        this.carregando = false;
+        this.finalizarCarregamento();
       },
       error: (err) => {
         console.error('Erro ao carregar processos:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
       }
     });
   }
@@ -279,7 +339,7 @@ export class EmAndamento implements OnInit {
       return;
     }
 
-    this.carregando = true;
+    this.iniciarCarregamento();
     const requisicoes = this.etapasConfig.map((config) =>
       this.processoService.listarProcessosEtapaEmAndamento(config.parametro)
     );
@@ -309,11 +369,11 @@ export class EmAndamento implements OnInit {
 
         this.etapasCarregadas = true;
         this.atualizarProcessosFiltrados();
-        this.carregando = false;
+        this.finalizarCarregamento();
       },
       error: (err) => {
         console.error('Erro ao carregar etapas em andamento:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
       }
     });
   }
@@ -345,6 +405,7 @@ export class EmAndamento implements OnInit {
   }
 
   private recarregarDadosPosAcao(): void {
+    this.materiaisCache = {};
     this.etapasCarregadas = false;
     this.carregarProcessos();
     if (this.abaAtiva === 'processos') {
@@ -369,7 +430,7 @@ export class EmAndamento implements OnInit {
   abrirDetalhesGeral(processo: ProcessoResumo): void {
     this.fecharModais();
     this.modalGeralAberto = true;
-    this.carregando = true;
+    this.iniciarCarregamento();
 
     this.processoService.obterDetalhesProcesso(processo.id).subscribe({
       next: (dados) => {
@@ -387,11 +448,11 @@ export class EmAndamento implements OnInit {
           responsavel: dados.responsavel,
           observacao: dados.observacao ?? ''
         };
-        this.carregando = false;
+        this.finalizarCarregamento();
       },
       error: (err) => {
         console.error('Erro ao carregar detalhes do processo:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
         this.modalGeralAberto = false;
         alert('Erro ao carregar detalhes. Veja o console.');
       }
@@ -403,7 +464,7 @@ export class EmAndamento implements OnInit {
     this.modalEtapaAberto = true;
     const etapaIdAtual = this.extrairEtapaId(processo);
     this.etapaSelecionada = { ...processo, etapaId: etapaIdAtual ?? processo.etapaId };
-    this.carregando = true;
+    this.iniciarCarregamento();
     this.etapaDetalhesRaw = null;
 
     this.processoService.obterDetalhesEtapa(processo.id).subscribe({
@@ -441,11 +502,11 @@ export class EmAndamento implements OnInit {
           });
         }
 
-        this.carregando = false;
+        this.finalizarCarregamento();
       },
       error: (err) => {
         console.error('Erro ao carregar detalhes da etapa:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
         this.modalEtapaAberto = false;
         alert('Erro ao carregar detalhes da etapa. Veja o console.');
       }
@@ -461,9 +522,49 @@ export class EmAndamento implements OnInit {
 
   abrirModalCorte(processo: ProcessoEtapa): void {
     this.fecharModais();
-    this.processoCorte = { ...processo };
-    this.materiais = [{ material: '', altura: '', largura: '', espessura: '', quantidade: '' }];
+    const etapaId = this.extrairEtapaId(processo) ?? processo.etapaId;
+    this.processoCorte = { ...processo, etapaId: etapaId ?? processo.etapaId };
     this.modalCorteAberto = true;
+
+    const processoId = processo.id;
+    const cache = this.materiaisCache[processoId];
+    if (cache?.length) {
+      this.materiais = [...cache.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
+      return;
+    }
+
+    this.materiais = [this.criarMaterialEmBranco()];
+    this.iniciarCarregamento();
+
+    this.processoService.obterDetalhesPreparacao(processo.id).subscribe({
+      next: (lista) => {
+        const materiaisExistentes = (lista ?? []).map<MaterialCorte>((item: any) => {
+          const altura = this.formatarNumero(
+            item?.altura ?? item?.Altura ?? item?.comprimento ?? item?.Comprimento
+          );
+          return {
+            material: item?.tipoMaterial ?? item?.TipoMaterial ?? '',
+            altura,
+            largura: this.formatarNumero(item?.largura ?? item?.Largura),
+            espessura: this.formatarNumero(item?.espessura ?? item?.Espessura),
+            quantidade: this.formatarNumero(item?.quantidade ?? item?.Quantidade),
+            readonly: true
+          };
+        });
+
+        this.materiaisCache[processoId] = materiaisExistentes.map((item) => ({ ...item }));
+
+        if (materiaisExistentes.length) {
+          this.materiais = [...materiaisExistentes.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
+        }
+
+        this.finalizarCarregamento();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar detalhes de corte:', err);
+        this.finalizarCarregamento();
+      }
+    });
   }
 
   fecharModalGeral(): void {
@@ -480,7 +581,14 @@ export class EmAndamento implements OnInit {
   }
 
   fecharModalCorte(): void {
+    const processoId = this.processoCorte?.id;
     this.modalCorteAberto = false;
+    this.processoCorte = null;
+    if (processoId && this.materiaisCache[processoId]?.length) {
+      this.materiais = this.materiaisCache[processoId].map((item) => ({ ...item }));
+    } else {
+      this.materiais = [];
+    }
   }
 
   salvarAlteracoes(): void {
@@ -488,7 +596,7 @@ export class EmAndamento implements OnInit {
       return;
     }
 
-    this.carregando = true;
+    this.iniciarCarregamento();
 
     const payload: { statusAtual: string; observacao: string; responsavel?: string } = {
       statusAtual: this.processoSelecionado.status,
@@ -505,12 +613,13 @@ export class EmAndamento implements OnInit {
     this.processoService.atualizarProcesso(this.processoSelecionado.id, payload).subscribe({
       next: () => {
         console.log(`Processo ${this.processoSelecionado.codigo} atualizado.`);
+        this.finalizarCarregamento();
         this.modalGeralAberto = false;
         this.carregarProcessos();
       },
       error: (err) => {
         console.error('Erro ao salvar alteracoes do processo:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
         alert('Nao foi possivel salvar as alteracoes. Veja o console.');
       }
     });
@@ -529,7 +638,7 @@ export class EmAndamento implements OnInit {
       this.extrairEtapaId(this.etapaSelecionada) ??
       this.extrairEtapaId(this.etapaDetalhesRaw);
 
-    this.carregando = true;
+    this.iniciarCarregamento();
 
     const statusNormalizado = (this.etapaSelecionada.status ?? '').trim() || 'Em andamento';
     const payload: {
@@ -554,12 +663,14 @@ export class EmAndamento implements OnInit {
           console.log(
             `Etapa ${this.etapaSelecionada.etapa} do processo ${this.etapaSelecionada.codigo} atualizada.`
           );
+          this.finalizarCarregamento();
           this.modalEtapaAberto = false;
+
           this.recarregarDadosPosAcao();
         },
         error: (err) => {
           console.error('Erro ao salvar alteracoes da etapa:', err);
-          this.carregando = false;
+          this.finalizarCarregamento();
           alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
         }
       });
@@ -575,7 +686,7 @@ export class EmAndamento implements OnInit {
       next: ({ etapaId, dados }) => {
         if (!etapaId) {
           console.error('Nao foi possivel identificar a etapa selecionada para atualizacao.');
-          this.carregando = false;
+          this.finalizarCarregamento();
           alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
           return;
         }
@@ -586,7 +697,7 @@ export class EmAndamento implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao buscar os dados da etapa para atualizacao:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
         alert('Nao foi possivel salvar as alteracoes da etapa. Veja o console.');
       }
     });
@@ -608,7 +719,7 @@ export class EmAndamento implements OnInit {
     const processoCodigo = this.processoAvancar.codigo;
     const etapaAtualNome = this.processoAvancar.etapa;
 
-    this.carregando = true;
+    this.iniciarCarregamento();
 
     const proximaConfig = this.obterProximaEtapaConfig(etapaAtualNome);
     const proximaEtapaNome = proximaConfig?.nome ?? etapaAtualNome;
@@ -628,14 +739,16 @@ export class EmAndamento implements OnInit {
             `Processo ${processoCodigo} avancado para ${proximaEtapaNome} com responsavel ${responsavel}.`,
             resposta
           );
+          this.finalizarCarregamento();
           this.modalAvancarAberto = false;
           this.processoAvancar = null;
           this.novoResponsavel = '';
+
           this.recarregarDadosPosAcao();
         },
         error: (err) => {
           console.error('Erro ao avancar etapa do processo:', err);
-          this.carregando = false;
+          this.finalizarCarregamento();
           alert('Nao foi possivel avancar a etapa. Veja o console.');
         }
       });
@@ -693,25 +806,139 @@ export class EmAndamento implements OnInit {
   }
 
   adicionarLinha(): void {
-    this.materiais.push({ material: '', altura: '', largura: '', espessura: '', quantidade: '' });
+    this.materiais.push(this.criarMaterialEmBranco());
   }
 
   removerLinha(index: number): void {
-    this.materiais.splice(index, 1);
-  }
-
-  concluirCorte(): void {
-    const existeIncompleto = this.materiais.some(
-      (item) => !item.material || !item.altura || !item.largura || !item.espessura || !item.quantidade
-    );
-
-    if (existeIncompleto) {
-      alert('Preencha todos os campos antes de concluir.');
+    const item = this.materiais[index];
+    if (!item) {
       return;
     }
 
-    console.table(this.materiais);
-    this.modalCorteAberto = false;
+    if (!this.podeRemoverMaterial(item)) {
+      alert('Remova apenas linhas em branco.');
+      return;
+    }
+
+    this.materiais.splice(index, 1);
+
+    if (this.materiais.length === 0) {
+      this.materiais.push(this.criarMaterialEmBranco());
+    }
+  }
+
+  concluirCorte(): void {
+    if (!this.processoCorte?.id) {
+      console.error('Nao foi possivel identificar o processo para registrar o corte.');
+      return;
+    }
+
+    const processoId = this.processoCorte.id;
+
+    const materiaisValidos = this.materiais
+      .filter((item) => {
+        const possuiDados =
+          item.material?.trim() ||
+          item.altura?.trim() ||
+          item.largura?.trim() ||
+          item.espessura?.trim() ||
+          item.quantidade?.trim();
+        return Boolean(possuiDados);
+      })
+      .map((item) => ({
+        material: item.material.trim(),
+        altura: Number(item.altura),
+        largura: Number(item.largura),
+        espessura: Number(item.espessura),
+        quantidade: Number(item.quantidade)
+      }));
+
+    if (!materiaisValidos.length) {
+      alert('Informe ao menos um material para salvar o corte.');
+      return;
+    }
+
+    const possuiDadosInvalidos = materiaisValidos.some(
+      (item) =>
+        !item.material ||
+        Number.isNaN(item.altura) ||
+        Number.isNaN(item.largura) ||
+        Number.isNaN(item.espessura) ||
+        Number.isNaN(item.quantidade) ||
+        item.altura <= 0 ||
+        item.largura <= 0 ||
+        item.espessura <= 0 ||
+        item.quantidade <= 0
+    );
+
+    if (possuiDadosInvalidos) {
+      alert('Preencha todos os campos com valores maiores que zero.');
+      return;
+    }
+
+    const etapaIdAtual = this.processoCorte.etapaId ?? null;
+    this.iniciarCarregamento();
+
+    const salvar = (etapaId: number) => {
+      const payload = {
+        etapaId,
+        materiais: materiaisValidos.map((item) => ({
+          tipoMaterial: item.material,
+          comprimento: item.altura,
+          largura: item.largura,
+          altura: item.altura,
+          espessura: item.espessura,
+          quantidade: item.quantidade
+        }))
+      };
+
+      this.processoService.salvarDetalhesPreparacao(payload).subscribe({
+        next: () => {
+          this.finalizarCarregamento();
+          const materiaisPersistidos = materiaisValidos.map<MaterialCorte>((item) => ({
+            material: item.material,
+            altura: String(item.altura),
+            largura: String(item.largura),
+            espessura: String(item.espessura),
+            quantidade: String(item.quantidade),
+            readonly: true
+          }));
+          this.materiaisCache[processoId] = materiaisPersistidos.map((item) => ({ ...item }));
+          this.materiais = [...materiaisPersistidos.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
+          console.log('Detalhes de corte salvos com sucesso.');
+        },
+        error: (err) => {
+          console.error('Erro ao salvar detalhes do corte:', err);
+          this.finalizarCarregamento();
+          alert('Nao foi possivel salvar os detalhes do corte. Veja o console.');
+        }
+      });
+    };
+
+    if (etapaIdAtual) {
+      salvar(etapaIdAtual);
+      return;
+    }
+
+    const etapaNome = this.processoCorte.etapa;
+    this.resolverEtapaId(this.processoCorte.id, etapaNome).subscribe({
+      next: (etapaId) => {
+        if (!etapaId) {
+          console.error('Nao foi possivel identificar a etapa de preparacao para registrar o corte.');
+          this.finalizarCarregamento();
+          alert('Nao foi possivel salvar os detalhes do corte. Veja o console.');
+          return;
+        }
+
+        this.processoCorte.etapaId = etapaId;
+        salvar(etapaId);
+      },
+      error: (erro) => {
+        console.error('Erro ao tentar identificar a etapa de corte:', erro);
+        this.finalizarCarregamento();
+        alert('Nao foi possivel salvar os detalhes do corte. Veja o console.');
+      }
+    });
   }
 
   finalizarProcesso(processo: ProcessoResumo | ProcessoEtapa): void {
@@ -720,7 +947,7 @@ export class EmAndamento implements OnInit {
       return;
     }
 
-    this.carregando = true;
+    this.iniciarCarregamento();
 
     const payload: { statusAtual: string; observacao: string; responsavel?: string } = {
       statusAtual: 'Finalizado',
@@ -735,11 +962,13 @@ export class EmAndamento implements OnInit {
     this.processoService.atualizarProcesso(processo.id, payload).subscribe({
       next: () => {
         console.log(`Processo ${processo.codigo} finalizado.`);
+        this.finalizarCarregamento();
+
         this.recarregarDadosPosAcao();
       },
       error: (err) => {
         console.error('Erro ao finalizar processo:', err);
-        this.carregando = false;
+        this.finalizarCarregamento();
         alert('Nao foi possivel finalizar o processo. Veja o console.');
       }
     });

@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using IsonelApi.Data;
 using IsonelApi.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace IsonelApi.Controllers
 {
@@ -43,6 +47,67 @@ namespace IsonelApi.Controllers
                 detalhes.TipoMaterial,
                 detalhes.Quantidade
             });
+        }
+
+        [HttpPost("salvar-lote")]
+        public IActionResult SalvarLote([FromBody] DetalhesPreparacaoLoteDto dto)
+        {
+            if (dto == null || dto.Materiais == null)
+                return BadRequest("Dados do corte n�o informados.");
+
+            var etapa = _context.Etapas.FirstOrDefault(e => e.Id == dto.EtapaId);
+            if (etapa == null)
+                return NotFound("Etapa n�o encontrada.");
+
+            var materiaisValidos = dto.Materiais
+                .Where(item =>
+                    item != null &&
+                    !string.IsNullOrWhiteSpace(item.TipoMaterial) &&
+                    item.Quantidade > 0 &&
+                    item.Altura > 0 &&
+                    item.Largura > 0 &&
+                    item.Espessura > 0)
+                .ToList();
+
+            if (!materiaisValidos.Any())
+                return BadRequest("Nenhum material v�lido informado para o corte.");
+
+            using var transacao = _context.Database.BeginTransaction();
+            try
+            {
+                var existentes = _context.DetalhesPreparacoes.Where(d => d.EtapaId == etapa.Id);
+                _context.DetalhesPreparacoes.RemoveRange(existentes);
+
+                foreach (var item in materiaisValidos)
+                {
+                    var detalhe = new DetalhesPreparacao
+                    {
+                        EtapaId = etapa.Id,
+                        TipoMaterial = item.TipoMaterial,
+                        Comprimento = item.Comprimento > 0 ? item.Comprimento : item.Altura,
+                        Largura = item.Largura,
+                        Altura = item.Altura,
+                        Espessura = item.Espessura,
+                        Quantidade = item.Quantidade
+                    };
+                    _context.DetalhesPreparacoes.Add(detalhe);
+                }
+
+                _context.SaveChanges();
+                transacao.Commit();
+
+                return Ok(new
+                {
+                    message = "Detalhes de corte registrados com sucesso!",
+                    etapaId = etapa.Id,
+                    quantidade = materiaisValidos.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                transacao.Rollback();
+                return StatusCode(500, $"Erro ao salvar detalhes do corte: {ex.Message}");
+            }
         }
 
         [HttpPut("{id}")]
@@ -94,5 +159,21 @@ namespace IsonelApi.Controllers
         public decimal Espessura { get; set; }
         public int Quantidade { get; set; }
         public string Observacao { get; set; } = string.Empty;
+    }
+
+    public class DetalhesPreparacaoItemDto
+    {
+        public string TipoMaterial { get; set; } = string.Empty;
+        public decimal Comprimento { get; set; }
+        public decimal Largura { get; set; }
+        public decimal Altura { get; set; }
+        public decimal Espessura { get; set; }
+        public int Quantidade { get; set; }
+    }
+
+    public class DetalhesPreparacaoLoteDto
+    {
+        public int EtapaId { get; set; }
+        public List<DetalhesPreparacaoItemDto> Materiais { get; set; } = new();
     }
 }

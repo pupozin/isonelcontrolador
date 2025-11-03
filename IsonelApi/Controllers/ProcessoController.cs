@@ -104,11 +104,15 @@ namespace IsonelApi.Controllers
             if (processo == null)
                 return NotFound("Processo não encontrado.");
 
-            // Recupera a etapa mais recente do processo, independentemente do status
+            // Recupera a etapa corrente (prioriza status diferente de Finalizado)
             var etapaAtual = _context.Etapas
-                .Where(e => e.ProcessoId == processo.Id)
+                .Where(e => e.ProcessoId == processo.Id && e.Status != "Finalizado")
                 .OrderByDescending(e => e.Id)
-                .FirstOrDefault();
+                .FirstOrDefault()
+                ?? _context.Etapas
+                    .Where(e => e.ProcessoId == processo.Id)
+                    .OrderByDescending(e => e.Id)
+                    .FirstOrDefault();
 
             if (etapaAtual == null)
                 return BadRequest("Nenhuma etapa encontrada para este processo.");

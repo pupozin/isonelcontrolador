@@ -156,15 +156,22 @@
 
       <div class="modal-corte__content">
         <div *ngFor="let item of materiais; let i = index" class="linha-inputs">
-          <input type="text" [(ngModel)]="item.material" placeholder="Material" />
-          <input type="number" [(ngModel)]="item.altura" placeholder="Altura" />
-          <input type="number" [(ngModel)]="item.largura" placeholder="Largura" />
-          <input type="number" [(ngModel)]="item.espessura" placeholder="Espessura" />
-          <input type="number" [(ngModel)]="item.quantidade" placeholder="Quantidade" />
-          <button class="btn-add" (click)="removerLinha(i)">&times;</button>
+          <input type="text" [(ngModel)]="item.material" placeholder="Material" [disabled]="!!item.readonly" />
+          <input type="number" [(ngModel)]="item.altura" placeholder="Altura" [disabled]="!!item.readonly" />
+          <input type="number" [(ngModel)]="item.largura" placeholder="Largura" [disabled]="!!item.readonly" />
+          <input type="number" [(ngModel)]="item.espessura" placeholder="Espessura" [disabled]="!!item.readonly" />
+          <input type="number" [(ngModel)]="item.quantidade" placeholder="Quantidade" [disabled]="!!item.readonly" />
+          <button
+            type="button"
+            class="btn-add"
+            (click)="removerLinha(i)"
+            [disabled]="!podeRemoverMaterial(item)"
+          >
+            &times;
+          </button>
         </div>
 
-        <button class="btn-add" (click)="adicionarLinha()">+</button>
+        <button class="btn-add" type="button" (click)="adicionarLinha()">+</button>
 
         <div class="modal-actions">
           <button class="btn-cancelar" (click)="fecharModalCorte()">Cancelar</button>
@@ -174,3 +181,5 @@
     </div>
   </div>
 </div>
+
+

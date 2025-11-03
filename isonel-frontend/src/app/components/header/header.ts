@@ -90,6 +90,7 @@ export class Header {
         console.log('✅ Processo criado:', res);
         this.exibirToast(`${res.codigo} criado com sucesso!`, 'sucesso');
         this.fecharModalCriar();
+        this.processoService.notificarAtualizacaoProcessos();
       },
       error: (err) => {
         console.error('❌ Erro ao criar processo:', err);
@@ -108,6 +109,5 @@ export class Header {
     }, 3000); 
   }
 }
-
 
 

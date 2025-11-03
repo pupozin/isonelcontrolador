@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +8,10 @@ import { Observable } from 'rxjs';
 export class ProcessoService {
   private apiUrl = 'https://localhost:7137/api/Processo'; // Ajuste se a API usar outra porta
   private etapaUrl = 'https://localhost:7137/api/Etapa';
+  private detalhesPreparacaoUrl = 'https://localhost:7137/api/DetalhesPreparacao';
+
+  private readonly processosAtualizadosSubject = new Subject<void>();
+  readonly processosAtualizados$ = this.processosAtualizadosSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -56,5 +60,27 @@ export class ProcessoService {
     observacao?: string;
   }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}`, payload);
+  }
+
+  obterDetalhesPreparacao(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${id}/detalhes-preparacao`);
+  }
+
+  salvarDetalhesPreparacao(payload: {
+    etapaId: number;
+    materiais: Array<{
+      tipoMaterial: string;
+      comprimento: number;
+      largura: number;
+      altura: number;
+      espessura: number;
+      quantidade: number;
+    }>;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.detalhesPreparacaoUrl}/salvar-lote`, payload);
+  }
+
+  notificarAtualizacaoProcessos(): void {
+    this.processosAtualizadosSubject.next();
   }
 }
