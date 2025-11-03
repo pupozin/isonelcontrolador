@@ -621,23 +621,75 @@ export class EmAndamento implements OnInit {
       observacao: ''
     };
 
-    this.processoService.avancarEtapa(processoId, payloadAvanco).subscribe({
-      next: (resposta) => {
-        console.log(
-          `Processo ${processoCodigo} avancado para ${proximaEtapaNome} com responsavel ${responsavel}.`,
-          resposta
-        );
-        this.modalAvancarAberto = false;
-        this.processoAvancar = null;
-        this.novoResponsavel = '';
-        this.recarregarDadosPosAcao();
-      },
-      error: (err) => {
-        console.error('Erro ao avancar etapa do processo:', err);
-        this.carregando = false;
-        alert('Nao foi possivel avancar a etapa. Veja o console.');
+    const avancarParaProximaEtapa = () => {
+      this.processoService.avancarEtapa(processoId, payloadAvanco).subscribe({
+        next: (resposta) => {
+          console.log(
+            `Processo ${processoCodigo} avancado para ${proximaEtapaNome} com responsavel ${responsavel}.`,
+            resposta
+          );
+          this.modalAvancarAberto = false;
+          this.processoAvancar = null;
+          this.novoResponsavel = '';
+          this.recarregarDadosPosAcao();
+        },
+        error: (err) => {
+          console.error('Erro ao avancar etapa do processo:', err);
+          this.carregando = false;
+          alert('Nao foi possivel avancar a etapa. Veja o console.');
+        }
+      });
+    };
+
+    const normalizarEtapaAtual = (etapaId?: number | null) => {
+      if (!etapaId) {
+        this.buscarEtapaAtual(processoId).subscribe({
+          next: ({ etapaId: etapaIdEncontrado }) => {
+            if (!etapaIdEncontrado) {
+              console.warn(
+                'Nao foi possivel identificar a etapa ativa antes do avanco. Tentando avancar mesmo assim.'
+              );
+              avancarParaProximaEtapa();
+              return;
+            }
+            normalizarEtapaAtual(etapaIdEncontrado);
+          },
+          error: (erro) => {
+            console.error('Erro ao obter detalhes da etapa antes do avanco:', erro);
+            avancarParaProximaEtapa();
+          }
+        });
+        return;
       }
-    });
+
+      const payloadEtapaAtual: {
+        status?: string;
+        statusEtapa?: string;
+        observacao: string;
+        responsavel?: string;
+      } = {
+        status: 'Em andamento',
+        statusEtapa: 'Em andamento',
+        observacao: ''
+      };
+
+      const responsavelAtual = this.processoAvancar?.responsavel?.trim();
+      if (responsavelAtual) {
+        payloadEtapaAtual.responsavel = responsavelAtual;
+      }
+
+      this.processoService.atualizarEtapa(etapaId, payloadEtapaAtual).subscribe({
+        next: () => {
+          avancarParaProximaEtapa();
+        },
+        error: (erro) => {
+          console.warn('Nao foi possivel normalizar a etapa antes do avanco.', erro);
+          avancarParaProximaEtapa();
+        }
+      });
+    };
+
+    normalizarEtapaAtual(this.processoAvancar.etapaId ?? null);
   }
 
   adicionarLinha(): void {

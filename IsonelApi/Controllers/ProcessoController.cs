@@ -104,18 +104,19 @@ namespace IsonelApi.Controllers
             if (processo == null)
                 return NotFound("Processo não encontrado.");
 
-            // Etapa atual em andamento
+            // Recupera a etapa mais recente do processo, independentemente do status
             var etapaAtual = _context.Etapas
-                .Where(e => e.ProcessoId == processo.Id && e.Status == "Em andamento")
+                .Where(e => e.ProcessoId == processo.Id)
                 .OrderByDescending(e => e.Id)
                 .FirstOrDefault();
 
             if (etapaAtual == null)
-                return BadRequest("Nenhuma etapa em andamento encontrada para este processo.");
+                return BadRequest("Nenhuma etapa encontrada para este processo.");
 
             // Finaliza a etapa atual
             etapaAtual.Status = "Finalizado";
             etapaAtual.Observacao = dto.Observacao ?? etapaAtual.Observacao;
+            etapaAtual.DataFim = DateTime.Now;
 
             // Determina a próxima etapa (simples por agora, podemos evoluir depois)
             string proximaEtapa = dto.ProximaEtapa?.ToUpper() ?? "PROXIMA";
@@ -135,9 +136,6 @@ namespace IsonelApi.Controllers
             // Atualiza processo
             processo.EstadoAtual = proximaEtapa;
             processo.StatusAtual = "Em andamento";
-            etapaAtual.Status = "Finalizado";
-            etapaAtual.DataFim = DateTime.Now;
-
 
             // Registra histórico
             var historico = new HistoricoMovimentacao
