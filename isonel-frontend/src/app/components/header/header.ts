@@ -67,7 +67,7 @@ export class Header {
 
   fecharModalCriar() {
     this.modalCriarAberto = false;
-  }
+   }
 
   criarProcesso() {
     const { cliente, produto, responsavel, etapa, observacao } = this.novoProcesso;

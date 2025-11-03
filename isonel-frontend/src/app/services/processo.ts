@@ -10,10 +10,6 @@ export class ProcessoService {
 
   constructor(private http: HttpClient) {}
 
-  criarProcesso(dados: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}`, dados);
-  }
-
   listarProcessosAndamento(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/andamento`);
   }
@@ -28,5 +24,15 @@ export class ProcessoService {
 
   obterDetalhesEtapaAtual(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}/detalhes-etapa`);
+  }
+
+    criarProcesso(payload: {
+    cliente: string;
+    produto: string;
+    responsavel: string;
+    tipoEtapa?: string;
+    observacao?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}`, payload);
   }
 }
