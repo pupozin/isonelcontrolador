@@ -22,7 +22,7 @@
         <p><i class="fa-solid fa-calendar-days"></i> Iniciado: {{ p.dataInicio }}</p>
         <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ p.cliente }}</p>
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
-        <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsavel: {{ p.responsavel }}</p>
+        <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsável: {{ p.responsavel }}</p>
 
         <button class="btn-detalhes" (click)="abrirDetalhesGeral(p)">Detalhes</button>
       </div>
@@ -48,7 +48,7 @@
         <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
         <button *ngIf="p.etapa === 'Preparacao'" class="btn-corte" (click)="abrirModalCorte(p)">Corte</button>
         <button *ngIf="p.etapa !== 'Ligacao'" class="btn-acao" (click)="abrirAvancarEtapa(p)">
-          Avancar etapa
+          Avançar etapa
         </button>
         <button *ngIf="p.etapa === 'Ligacao'" class="btn-acao btn-finalizar" (click)="finalizarProcesso(p)">
           Finalizar processo
@@ -79,11 +79,11 @@
         <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processoSelecionado?.cliente }}</p>
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processoSelecionado?.produto }}</p>
         <p>
-          <i class="fa-solid fa-user-gear"></i> Responsavel pela etapa:
+          <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
           <input class="input-responsavel" type="text" [(ngModel)]="processoSelecionado.responsavel" />
         </p>
 
-        <label>Observacao</label>
+        <label>Observação</label>
         <textarea [(ngModel)]="processoSelecionado.observacao" placeholder="Digite aqui..."></textarea>
 
         <div class="modal-actions">
@@ -116,11 +116,11 @@
         <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ etapaSelecionada?.cliente }}</p>
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ etapaSelecionada?.produto }}</p>
         <p>
-          <i class="fa-solid fa-user-gear"></i> Responsavel pela etapa:
+          <i class="fa-solid fa-user-gear"></i> Responsável pela etapa:
           <input class="input-responsavel" type="text" [(ngModel)]="etapaSelecionada.responsavel" />
         </p>
 
-        <label>Observacao</label>
+        <label>Observação</label>
         <textarea [(ngModel)]="etapaSelecionada.observacao" placeholder="Digite aqui..."></textarea>
 
         <div class="modal-actions">
@@ -133,9 +133,9 @@
 
   <div class="modal-overlay" *ngIf="modalAvancarAberto" (click)="fecharModalAvancar()">
     <div class="modal-avancar" (click)="$event.stopPropagation()">
-      <h2>Avancar etapa</h2>
+      <h2>Avançar etapa</h2>
 
-      <p>Insira o responsavel pela proxima etapa</p>
+      <p>Insira o responsável pela próxima etapa</p>
       <input
         type="text"
         [(ngModel)]="novoResponsavel"

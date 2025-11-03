@@ -58,7 +58,7 @@ export class EmAndamento implements OnInit {
 
   private readonly etapasConfig = [
     { nome: 'Venda', parametro: 'VENDA' },
-    { nome: 'Preparacao', parametro: 'PREPARACAO' },
+    { nome: 'Preparação', parametro: 'PREPARAÇÃO' },
     { nome: 'Colagem', parametro: 'COLAGEM' },
     { nome: 'Secagem', parametro: 'SECAGEM' },
     { nome: 'Dobragem', parametro: 'DOBRAGEM' },
