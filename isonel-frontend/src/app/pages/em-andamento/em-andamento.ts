@@ -104,6 +104,13 @@ export class EmAndamento implements OnInit {
     return this.mapaEtapas[chave] ?? fallback;
   }
 
+  exibeBotaoCorte(etapa?: string): boolean {
+    if (!etapa) {
+      return false;
+    }
+    return this.removerAcentos(etapa).toLowerCase() === 'preparacao';
+  }
+
   carregarProcessos(): void {
     this.carregando = true;
     this.processoService.listarProcessosAndamento().subscribe({
