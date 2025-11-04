@@ -269,51 +269,9 @@
   }
 }
 
-.modal-busca {
-  background: #fff;
-  border-radius: 15px;
-  padding: 30px;
-  width: 700px;
-  max-width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  text-align: left;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.2s ease;
-
-  h2 {
-    margin-bottom: 15px;
-  }
-
-  .resultados-container {
-    display: grid;
-    gap: 16px;
-  }
-
-  .card-processo {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 15px;
-    cursor: pointer;
-    transition: 0.2s;
-    background: #fafafa;
-
-    &:hover {
-      background: #eaeaea;
-    }
-
-    .status {
-      display: inline-block;
-      margin-top: 6px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background-color: #007bff;
-      color: white;
-      font-size: 12px;
-    }
-  }
-}
-
+/* ===========================
+   MODAL DE BUSCA GLOBAL
+=========================== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -325,6 +283,7 @@
   align-items: center;
   justify-content: center;
   z-index: 999;
+  animation: fadeInBg 0.2s ease;
 }
 
 @keyframes fadeIn {
@@ -332,5 +291,105 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-/* Main content displacement is handled globally in app.scss */
+/* MODAL DE BUSCA */
+.modal-busca {
+  background: #fff;
+  color: #000;
+  border-radius: 18px;
+  padding: 32px;
+  width: 720px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Título principal */
+.modal-busca h2 {
+  color: #000;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ícone do título */
+.modal-busca h2 i {
+  color: var(--cor-primaria);
+  font-size: 1.3rem;
+}
+
+/* Container de resultados */
+.modal-busca .resultados-container {
+  display: grid;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+/* Card de processo encontrado */
+.modal-busca .card-processo {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background-color 0.25s, transform 0.15s;
+  background: #f9f9f9;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-busca .card-processo:hover {
+  background: #f1f1f1;
+  transform: translateY(-2px);
+}
+
+/* Cabeçalho do card */
+.modal-busca .card-processo h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--cor-primaria);
+}
+
+/* Campos de texto */
+.modal-busca .card-processo p {
+  margin: 0;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #333;
+}
+
+/* Ícones nos textos */
+.modal-busca .card-processo p i {
+  color: var(--cor-primaria);
+  font-size: 0.9rem;
+}
+
+/* Status visual */
+.modal-busca .card-processo .status {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background-color: var(--cor-primaria);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  align-self: flex-start;
+}
