@@ -108,6 +108,41 @@ export class Header {
       this.toast.visivel = false;
     }, 3000); 
   }
+
+  termoBusca = '';
+modalBuscaAberto = false;
+resultadosBusca: any[] = [];
+carregandoBusca = false;
+
+buscarGlobal() {
+  const termo = this.termoBusca.trim();
+  if (!termo) return;
+
+  this.carregandoBusca = true;
+  this.modalBuscaAberto = true;
+  this.processoService.pesquisarProcessos(termo).subscribe({
+    next: (res) => {
+      this.resultadosBusca = res;
+      this.carregandoBusca = false;
+    },
+    error: (err) => {
+      console.error('Erro na busca global:', err);
+      this.carregandoBusca = false;
+      this.resultadosBusca = [];
+    }
+  });
+}
+
+fecharModalBusca() {
+  this.modalBuscaAberto = false;
+  this.termoBusca = '';
+  this.resultadosBusca = [];
+}
+
+abrirDetalhes(processo: any) {
+  this.modalBuscaAberto = false;
+  this.processoService.notificarAtualizacaoProcessos();
+}
 }
 
 

@@ -244,6 +244,58 @@ namespace IsonelApi.Controllers
 
             return Ok(detalhes);
         }
+
+        // pesquisa de processos 
+        [HttpGet("pesquisar")]
+        public IActionResult PesquisarProcessos([FromQuery] string termo)
+        {
+            if (string.IsNullOrWhiteSpace(termo))
+                return BadRequest("Informe um termo para pesquisa.");
+
+            var connection = _context.Database.GetDbConnection();
+            var resultados = new List<PesquisaProcessoDto>();
+
+            try
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "EXEC sp_PesquisarProcessos @Termo";
+                    var param = command.CreateParameter();
+                    param.ParameterName = "@Termo";
+                    param.Value = termo;
+                    command.Parameters.Add(param);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            resultados.Add(new PesquisaProcessoDto
+                            {
+                                ProcessoId = reader.GetInt32(reader.GetOrdinal("ProcessoId")),
+                                EtapaId = reader.IsDBNull(reader.GetOrdinal("EtapaId")) ? null : reader.GetInt32(reader.GetOrdinal("EtapaId")),
+                                Codigo = reader["Codigo"]?.ToString(),
+                                Cliente = reader["Cliente"]?.ToString(),
+                                Produto = reader["Produto"]?.ToString(),
+                                EstadoAtual = reader["EstadoAtual"]?.ToString(),
+                                StatusAtual = reader["StatusAtual"]?.ToString(),
+                                Responsavel = reader["Responsavel"]?.ToString(),
+                                TipoEtapa = reader["TipoEtapa"]?.ToString(),
+                                StatusEtapa = reader["StatusEtapa"]?.ToString(),
+                                DataInicio = reader.GetDateTime(reader.GetOrdinal("DataInicio"))
+                            });
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return Ok(resultados);
+        }
+
     }
 
     public class ProcessoCreateDto
@@ -329,6 +381,20 @@ namespace IsonelApi.Controllers
         public int Quantidade { get; set; }
     }
 
+    public class PesquisaProcessoDto
+    {
+        public int ProcessoId { get; set; }
+        public int? EtapaId { get; set; }
+        public string? Codigo { get; set; }
+        public string? Cliente { get; set; }
+        public string? Produto { get; set; }
+        public string? EstadoAtual { get; set; }
+        public string? StatusAtual { get; set; }
+        public string? Responsavel { get; set; }
+        public string? TipoEtapa { get; set; }
+        public string? StatusEtapa { get; set; }
+        public DateTime DataInicio { get; set; }
+    }
 
 }
 

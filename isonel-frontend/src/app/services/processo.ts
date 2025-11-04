@@ -81,4 +81,8 @@ export class ProcessoService {
   notificarAtualizacaoProcessos(): void {
     this.processosAtualizadosSubject.next();
   }
+
+  pesquisarProcessos(termo: string) {
+  return this.http.get<any[]>(`${this.apiUrl}/pesquisar?termo=${encodeURIComponent(termo)}`);
+}
 }
