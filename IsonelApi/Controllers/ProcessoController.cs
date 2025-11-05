@@ -187,6 +187,18 @@ namespace IsonelApi.Controllers
             return Ok(lista);
         }
 
+
+        //Retorna Processo pausado
+
+        [HttpGet("pausado")]
+        public IActionResult ListarProcessosPausado()
+        {
+            var lista = _context.Set<ProcessoPausadoDto>()
+                .FromSqlRaw("EXEC sp_ListarProcessosPausado")
+                .ToList();
+            return Ok(lista);
+        }
+
         //Retorna detalhes Processo em andamento
         [HttpGet("{id}/detalhes")]
         public IActionResult ObterDetalhesProcessoAndamento(int id)
@@ -321,6 +333,18 @@ namespace IsonelApi.Controllers
     }
 
     public class ProcessoAndamentoDto
+    {
+        public int Id { get; set; }
+        public string? Codigo { get; set; }
+        public string? Cliente { get; set; }
+        public string? Produto { get; set; }
+        public string? EstadoAtual { get; set; }
+        public string? StatusProcesso { get; set; }
+        public string? Responsavel { get; set; }
+        public DateTime DataInicio { get; set; }
+    }
+
+    public class ProcessoPausadoDto
     {
         public int Id { get; set; }
         public string? Codigo { get; set; }
