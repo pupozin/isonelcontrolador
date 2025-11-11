@@ -23,6 +23,10 @@ export class ProcessoService {
     return this.http.get<any[]>(`${this.apiUrl}/pausado`);
   }
 
+  listarProcessosFinalizados(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/finalizado`);
+  }
+
   obterDetalhesProcesso(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}/detalhes`);
   }

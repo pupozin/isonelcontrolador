@@ -1,0 +1,65 @@
+<div class="finalizado-container container">
+  <div class="loading-overlay" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando processos...</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="abaAtiva === 'geral'" (click)="selecionarAba('geral')">Geral</button>
+  </div>
+
+  <div *ngIf="abaAtiva === 'geral'" class="aba-geral">
+    <h2 class="titulo">Ativos: {{ processos.length }}</h2>
+
+    <div class="cards-container">
+      <div *ngFor="let p of processos" class="card-processo">
+        <h4>{{ p.codigo }}</h4>
+        <p class="status"><i class="fa-solid fa-circle" [style.color]="p.cor"></i> {{ p.status }}</p>
+        <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ p.etapa }}</p>
+        <p><i class="fa-solid fa-calendar-days"></i> Iniciado: {{ p.dataInicio }}</p>
+        <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ p.cliente }}</p>
+        <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
+        <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsavel: {{ p.responsavel }}</p>
+
+        <button class="btn-detalhes" (click)="abrirDetalhesGeral(p)">Detalhes</button>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="modalGeralAberto && processoSelecionado as processo">
+    <div class="modal-overlay" (click)="fecharModalGeral()">
+      <div class="modal-detalhes" (click)="$event.stopPropagation()">
+        <h2>Detalhes</h2>
+
+        <h3>{{ processo.codigo }}</h3>
+
+        <div class="status-row">
+          <i class="fa-solid fa-circle" [style.color]="processo.cor"></i>
+          <select [(ngModel)]="processo.status" class="input-status">
+            <option>Em andamento</option>
+            <option>Finalizado</option>
+            <option>Pausado</option>
+          </select>
+        </div>
+
+        <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ processo.etapa }}</p>
+        <p><i class="fa-solid fa-calendar-days"></i> Processo iniciado: {{ processo.dataInicio }}</p>
+        <p><i class="fa-solid fa-calendar-days"></i> Etapa iniciada: {{ processo.dataEtapa }}</p>
+        <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processo.cliente }}</p>
+        <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processo.produto }}</p>
+        <p>
+          <i class="fa-solid fa-user-gear"></i> Responsavel pela etapa:
+          <input class="input-responsavel" type="text" [(ngModel)]="processo.responsavel" />
+        </p>
+
+        <label>Observacao</label>
+        <textarea [(ngModel)]="processo.observacao" placeholder="Digite aqui..."></textarea>
+
+        <div class="modal-actions">
+          <button class="btn-cancelar" (click)="fecharModalGeral()">Cancelar</button>
+          <button class="btn-concluir" (click)="salvarAlteracoes()">Concluir</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
