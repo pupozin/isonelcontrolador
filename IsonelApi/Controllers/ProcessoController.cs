@@ -319,6 +319,35 @@ namespace IsonelApi.Controllers
             return Ok(resultados);
         }
 
+        // Retorna detalhes do processo finalizado
+        [HttpGet("{id}/detalhes-finalizado")]
+        public IActionResult ObterDetalhesProcessoFinalizado(int id)
+        {
+            var detalhes = _context.DetalhesProcessoFinalizado
+                .FromSqlRaw("EXEC sp_ListarDetalhesProcessoFinalizado @p0", id)
+                .AsEnumerable()
+                .FirstOrDefault();
+
+            if (detalhes == null)
+                return NotFound("Processo não encontrado ou não está finalizado.");
+
+            return Ok(detalhes);
+        }
+
+        // Retorna as etapas de um processo finalizado
+        [HttpGet("{id}/etapas-finalizado")]
+        public IActionResult ObterEtapasProcessoFinalizado(int id)
+        {
+            var etapas = _context.EtapasProcessoFinalizado
+                .FromSqlRaw("EXEC sp_ListarEtapasProcessoFinalizado @p0", id)
+                .AsEnumerable()
+                .ToList();
+
+            if (etapas == null || !etapas.Any())
+                return NotFound("Nenhuma etapa encontrada para este processo.");
+
+            return Ok(etapas);
+        }
     }
 
     public class ProcessoCreateDto
@@ -443,6 +472,34 @@ namespace IsonelApi.Controllers
         public string? StatusEtapa { get; set; }
         public DateTime DataInicio { get; set; }
     }
+
+    public class DetalhesProcessoFinalizadoDto
+    {
+        public int ProcessoId { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Cliente { get; set; } = string.Empty;
+        public string Produto { get; set; } = string.Empty;
+        public string StatusProcesso { get; set; } = string.Empty;
+        public string Observacao { get; set; } = string.Empty;
+        public DateTime DataInicioProcesso { get; set; }
+        public DateTime? DataFimProcesso { get; set; }
+        public int DuracaoTotalMinutos { get; set; }
+        public string DuracaoFormatada { get; set; } = string.Empty;
+    }
+
+    public class EtapaProcessoFinalizadoDto
+    {
+        public int EtapaId { get; set; }
+        public string TipoEtapa { get; set; } = string.Empty;
+        public string Responsavel { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public DateTime DataInicioEtapa { get; set; }
+        public DateTime? DataFimEtapa { get; set; }
+        public int DuracaoMinutos { get; set; }
+        public string DuracaoFormatada { get; set; } = string.Empty;
+        public string Observacao { get; set; } = string.Empty;
+    }
+
 
 }
 

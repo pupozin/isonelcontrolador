@@ -178,7 +178,7 @@ export class Pausado implements OnInit, OnDestroy {
     if (chave === 'finalizado') {
       return 'green';
     }
-    if (chave === 'pendente') {
+    if (chave === 'pendente' || chave == 'pausado') {
       return 'gray';
     }
     return 'orange';
