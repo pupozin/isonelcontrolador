@@ -91,6 +91,21 @@ namespace IsonelApi.Controllers
                 if (string.Equals(statusAtual, "Finalizado", StringComparison.OrdinalIgnoreCase))
                 {
                     processo.DataFim = DateTime.Now;
+
+                    var etapaAtual = _context.Etapas
+                        .Where(e => e.ProcessoId == processo.Id && e.Status != "Finalizado")
+                        .OrderByDescending(e => e.Id)
+                        .FirstOrDefault()
+                        ?? _context.Etapas
+                            .Where(e => e.ProcessoId == processo.Id)
+                            .OrderByDescending(e => e.Id)
+                            .FirstOrDefault();
+
+                    if (etapaAtual != null)
+                    {
+                        etapaAtual.Status = "Finalizado";
+                        etapaAtual.DataFim = DateTime.Now;
+                    }
                 }
             }
 
