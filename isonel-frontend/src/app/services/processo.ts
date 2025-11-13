@@ -2,6 +2,32 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 
+export interface DetalhesProcessoFinalizadoDto {
+  processoId: number;
+  codigo: string;
+  cliente: string;
+  produto: string;
+  statusProcesso: string;
+  observacao: string | null;
+  dataInicioProcesso: string;
+  dataFimProcesso: string;
+  duracaoTotalMinutos: number;
+  duracaoFormatada: string;
+  responsavel?: string | null;
+}
+
+export interface EtapaFinalizadaDto {
+  etapaId: number;
+  tipoEtapa: string;
+  responsavel: string;
+  status: string;
+  dataInicioEtapa: string;
+  dataFimEtapa: string;
+  duracaoMinutos: number;
+  duracaoFormatada: string;
+  observacao: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -72,6 +98,14 @@ export class ProcessoService {
 
   obterDetalhesPreparacao(id: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${id}/detalhes-preparacao`);
+  }
+
+  getDetalhesProcessoFinalizado(id: number): Observable<DetalhesProcessoFinalizadoDto> {
+    return this.http.get<DetalhesProcessoFinalizadoDto>(`${this.apiUrl}/${id}/detalhes-finalizado`);
+  }
+
+  getEtapasProcessoFinalizado(id: number): Observable<EtapaFinalizadaDto[]> {
+    return this.http.get<EtapaFinalizadaDto[]>(`${this.apiUrl}/${id}/etapas-finalizado`);
   }
 
   salvarDetalhesPreparacao(payload: {

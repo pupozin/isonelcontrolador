@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { ProcessoService } from '../../services/processo';
+import {
+  DetalhesProcessoFinalizadoDto,
+  EtapaFinalizadaDto,
+  ProcessoService
+} from '../../services/processo';
 
 interface ProcessoResumo {
   id: number;
@@ -16,11 +20,6 @@ interface ProcessoResumo {
   responsavel: string;
 }
 
-type ProcessoDetalhado = ProcessoResumo & {
-  dataEtapa?: string;
-  observacao?: string;
-};
-
 @Component({
   selector: 'app-finalizado',
   standalone: true,
@@ -32,8 +31,11 @@ export class Finalizado implements OnInit, OnDestroy {
   abaAtiva = 'geral';
   processos: ProcessoResumo[] = [];
   carregando = false;
-  modalGeralAberto = false;
-  processoSelecionado: ProcessoDetalhado | null = null;
+  modalDetalhesAberto = false;
+  modalHistoricoAberto = false;
+  processoResumoSelecionado: ProcessoResumo | null = null;
+  detalhesProcessoFinalizado: DetalhesProcessoFinalizadoDto | null = null;
+  historicoEtapas: EtapaFinalizadaDto[] = [];
 
   private carregandoContador = 0;
   private subscriptions = new Subscription();
@@ -94,69 +96,64 @@ export class Finalizado implements OnInit, OnDestroy {
     }
   }
 
-  abrirDetalhesGeral(processo: ProcessoResumo): void {
-    this.modalGeralAberto = true;
+  abrirDetalhesFinalizado(processo: ProcessoResumo): void {
+    this.modalDetalhesAberto = true;
+    this.processoResumoSelecionado = processo;
+    this.detalhesProcessoFinalizado = null;
     this.iniciarCarregamento();
 
-    this.processoService.obterDetalhesProcesso(processo.id).subscribe({
+    this.processoService.getDetalhesProcessoFinalizado(processo.id).subscribe({
       next: (dados) => {
-        const status = dados.statusProcesso ?? processo.status ?? 'Finalizado';
-        this.processoSelecionado = {
-          id: dados.id ?? processo.id,
-          codigo: dados.codigo ?? processo.codigo,
-          cliente: dados.cliente ?? processo.cliente,
-          produto: dados.produto ?? processo.produto,
-          etapa: this.formatarEtapa(dados.estadoAtual, processo.etapa),
-          status,
-          cor: this.corPorStatus(status),
-          dataInicio: this.formatarData(dados.dataInicioProcesso, processo.dataInicio),
-          responsavel: dados.responsavel ?? processo.responsavel,
-          dataEtapa: this.formatarData(dados.dataInicioEtapa),
-          observacao: dados.observacao ?? ''
-        };
+        this.detalhesProcessoFinalizado = dados;
         this.finalizarCarregamento();
       },
       error: (erro) => {
         console.error('Erro ao carregar detalhes do processo finalizado:', erro);
         this.finalizarCarregamento();
+        alert('Nao foi possivel carregar os detalhes do processo. Tente novamente.');
+        this.fecharModalDetalhes();
       }
     });
   }
 
-  fecharModalGeral(): void {
-    this.modalGeralAberto = false;
-    this.processoSelecionado = null;
-  }
+  abrirHistoricoEtapas(): void {
+    const processoId =
+      this.detalhesProcessoFinalizado?.processoId ?? this.processoResumoSelecionado?.id;
 
-  salvarAlteracoes(): void {
-    if (!this.processoSelecionado?.id) {
+    if (!processoId) {
       return;
     }
 
-    const payload: { statusAtual: string; observacao: string; responsavel?: string } = {
-      statusAtual: this.processoSelecionado.status,
-      observacao: this.processoSelecionado.observacao ?? ''
-    };
-
-    const responsavel = this.processoSelecionado.responsavel?.trim();
-    if (responsavel) {
-      payload.responsavel = responsavel;
-    }
-
+    this.modalHistoricoAberto = true;
+    this.historicoEtapas = [];
     this.iniciarCarregamento();
-    this.processoService.atualizarProcesso(this.processoSelecionado.id, payload).subscribe({
-      next: () => {
-        this.modalGeralAberto = false;
-        this.processoSelecionado = null;
+
+    this.processoService.getEtapasProcessoFinalizado(processoId).subscribe({
+      next: (dados) => {
+        this.historicoEtapas = [...(dados ?? [])].sort((a, b) =>
+          this.compararDatas(a.dataInicioEtapa, b.dataInicioEtapa)
+        );
         this.finalizarCarregamento();
-        this.carregarProcessos();
       },
       error: (erro) => {
-        console.error('Erro ao salvar alteracoes do processo finalizado:', erro);
+        console.error('Erro ao carregar historico de etapas do processo:', erro);
         this.finalizarCarregamento();
-        alert('Nao foi possivel salvar as alteracoes. Veja o console.');
+        alert('Nao foi possivel carregar o historico de etapas. Tente novamente.');
+        this.fecharModalHistorico();
       }
     });
+  }
+
+  fecharModalDetalhes(): void {
+    this.modalDetalhesAberto = false;
+    this.processoResumoSelecionado = null;
+    this.detalhesProcessoFinalizado = null;
+    this.fecharModalHistorico();
+  }
+
+  fecharModalHistorico(): void {
+    this.modalHistoricoAberto = false;
+    this.historicoEtapas = [];
   }
 
   private iniciarCarregamento(): void {
@@ -192,7 +189,13 @@ export class Finalizado implements OnInit, OnDestroy {
     return this.mapaEtapas[chave] ?? valor;
   }
 
-  private formatarData(valor?: string, fallback = ''): string {
+  private compararDatas(a?: string, b?: string): number {
+    const dataA = a ? new Date(a).getTime() : 0;
+    const dataB = b ? new Date(b).getTime() : 0;
+    return dataA - dataB;
+  }
+
+  formatarData(valor?: string, fallback = ''): string {
     if (!valor) {
       return fallback;
     }

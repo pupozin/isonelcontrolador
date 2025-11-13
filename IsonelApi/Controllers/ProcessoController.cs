@@ -507,7 +507,6 @@ namespace IsonelApi.Controllers
         public int EtapaId { get; set; }
         public string TipoEtapa { get; set; } = string.Empty;
         public string Responsavel { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
         public DateTime DataInicioEtapa { get; set; }
         public DateTime? DataFimEtapa { get; set; }
         public int DuracaoMinutos { get; set; }

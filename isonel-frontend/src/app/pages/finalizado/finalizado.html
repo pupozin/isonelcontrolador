@@ -21,43 +21,110 @@
         <p><i class="fa-solid fa-box-archive"></i> Produto: {{ p.produto }}</p>
         <p class="responsavel"><i class="fa-solid fa-user-gear"></i> Responsavel: {{ p.responsavel }}</p>
 
-        <button class="btn-detalhes" (click)="abrirDetalhesGeral(p)">Detalhes</button>
+        <button class="btn-detalhes" (click)="abrirDetalhesFinalizado(p)">Detalhes</button>
       </div>
     </div>
   </div>
 
-  <ng-container *ngIf="modalGeralAberto && processoSelecionado as processo">
-    <div class="modal-overlay" (click)="fecharModalGeral()">
+  <ng-container *ngIf="modalDetalhesAberto && processoResumoSelecionado as processo">
+    <div class="modal-overlay" (click)="fecharModalDetalhes()">
       <div class="modal-detalhes" (click)="$event.stopPropagation()">
         <h2>Detalhes</h2>
 
-        <h3>{{ processo.codigo }}</h3>
+        <h3>{{ detalhesProcessoFinalizado?.codigo ?? processo.codigo }}</h3>
 
         <div class="status-row">
           <i class="fa-solid fa-circle" [style.color]="processo.cor"></i>
-          <select [(ngModel)]="processo.status" class="input-status">
-            <option>Em andamento</option>
-            <option>Finalizado</option>
-            <option>Pausado</option>
+          <select class="input-status"
+                  [ngModel]="detalhesProcessoFinalizado?.statusProcesso ?? processo.status"
+                  disabled>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Finalizado">Finalizado</option>
+            <option value="Pausado">Pausado</option>
           </select>
         </div>
 
-        <p><i class="fa-solid fa-diagram-project"></i> Etapa: {{ processo.etapa }}</p>
-        <p><i class="fa-solid fa-calendar-days"></i> Processo iniciado: {{ processo.dataInicio }}</p>
-        <p><i class="fa-solid fa-calendar-days"></i> Etapa iniciada: {{ processo.dataEtapa }}</p>
-        <p><i class="fa-solid fa-cart-shopping"></i> Cliente: {{ processo.cliente }}</p>
-        <p><i class="fa-solid fa-box-archive"></i> Produto: {{ processo.produto }}</p>
         <p>
-          <i class="fa-solid fa-user-gear"></i> Responsavel pela etapa:
-          <input class="input-responsavel" type="text" [(ngModel)]="processo.responsavel" />
+          <i class="fa-solid fa-calendar-days"></i>
+          Processo iniciado:
+          {{ formatarData(detalhesProcessoFinalizado?.dataInicioProcesso, processo.dataInicio) }}
+        </p>
+        <p>
+          <i class="fa-solid fa-calendar-check"></i>
+          Processo finalizado:
+          {{ formatarData(detalhesProcessoFinalizado?.dataFimProcesso, '--') }}
+        </p>
+        <p>
+          <i class="fa-solid fa-cart-shopping"></i>
+          Cliente: {{ detalhesProcessoFinalizado?.cliente ?? processo.cliente }}
+        </p>
+        <p>
+          <i class="fa-solid fa-box-archive"></i>
+          Produto: {{ detalhesProcessoFinalizado?.produto ?? processo.produto }}
+        </p>
+        <p>
+          <i class="fa-solid fa-user-gear"></i>
+          Responsavel pela etapa:
+          <input class="input-responsavel"
+                 type="text"
+                 [ngModel]="detalhesProcessoFinalizado?.responsavel ?? processo.responsavel"
+                 disabled />
+        </p>
+
+        <p class="duracao-total">
+          <i class="fa-solid fa-stopwatch"></i>
+          Duracao total: {{ detalhesProcessoFinalizado?.duracaoFormatada ?? '--' }}
         </p>
 
         <label>Observacao</label>
-        <textarea [(ngModel)]="processo.observacao" placeholder="Digite aqui..."></textarea>
+        <textarea [ngModel]="detalhesProcessoFinalizado?.observacao ?? ''"
+                  placeholder="Sem observacoes"
+                  disabled
+                  readonly></textarea>
+
+
 
         <div class="modal-actions">
-          <button class="btn-cancelar" (click)="fecharModalGeral()">Cancelar</button>
-          <button class="btn-concluir" (click)="salvarAlteracoes()">Concluir</button>
+          <button class="btn-cancelar" (click)="fecharModalDetalhes()">Fechar</button>
+          <button class="btn-concluir"
+                  (click)="abrirHistoricoEtapas()"
+                  [disabled]="!detalhesProcessoFinalizado">
+            Historico de etapas
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="modalHistoricoAberto">
+    <div class="modal-overlay" (click)="fecharModalHistorico()">
+      <div class="modal-detalhes modal-historico" (click)="$event.stopPropagation()">
+        <h2>Historico de etapas</h2>
+
+        <div *ngIf="historicoEtapas.length === 0" class="estado-vazio">
+          Nenhuma etapa encontrada para este processo.
+        </div>
+
+        <div class="historico-lista" *ngIf="historicoEtapas.length > 0">
+          <div *ngFor="let etapa of historicoEtapas" class="card-processo card-etapa">
+            <h4>{{ etapa.tipoEtapa }}</h4>
+            <p><i class="fa-solid fa-user"></i> Responsavel: {{ etapa.responsavel }}</p>
+            <p>
+              <i class="fa-solid fa-calendar-day"></i>
+              Inicio: {{ formatarData(etapa.dataInicioEtapa, '--') }}
+            </p>
+            <p>
+              <i class="fa-solid fa-calendar-day"></i>
+              Fim: {{ formatarData(etapa.dataFimEtapa, '--') }}
+            </p>
+            <p><i class="fa-solid fa-stopwatch"></i> Duracao: {{ etapa.duracaoFormatada }}</p>
+            <label>Observacao</label>
+            <textarea [ngModel]="etapa.observacao ?? ''" disabled readonly></textarea>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancelar" (click)="fecharModalHistorico()">Fechar</button>
         </div>
       </div>
     </div>
