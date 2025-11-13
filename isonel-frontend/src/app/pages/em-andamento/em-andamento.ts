@@ -28,16 +28,6 @@ interface ProcessoEtapa {
   cor: string;
 }
 
-interface MaterialCorte {
-  id?: number;
-  material: string;
-  altura: string;
-  largura: string;
-  espessura: string;
-  quantidade: string;
-  readonly?: boolean;
-}
-
 @Component({
   selector: 'app-em-andamento',
   standalone: true,
@@ -59,14 +49,11 @@ export class EmAndamento implements OnInit, OnDestroy {
   modalGeralAberto = false;
   modalEtapaAberto = false;
   modalAvancarAberto = false;
-  modalCorteAberto = false;
 
   processoSelecionado: any = null;
   etapaSelecionada: any = null;
   processoAvancar: any = null;
-  processoCorte: any = null;
   novoResponsavel = '';
-  materiais: MaterialCorte[] = [];
   private etapaDetalhesRaw: any = null;
   private subscriptions = new Subscription();
   private carregandoContador = 0;
@@ -89,9 +76,7 @@ export class EmAndamento implements OnInit, OnDestroy {
     return mapa;
   }, {} as Record<string, string>);
 
-  constructor(private processoService: ProcessoService) {
-    this.materiais = [this.criarMaterialEmBranco()];
-  }
+  constructor(private processoService: ProcessoService) {}
 
   ngOnInit(): void {
     this.carregarProcessos();
@@ -142,42 +127,6 @@ export class EmAndamento implements OnInit, OnDestroy {
     if (this.carregandoContador === 0) {
       this.carregando = false;
     }
-  }
-
-  private criarMaterialEmBranco(): MaterialCorte {
-    return { material: '', altura: '', largura: '', espessura: '', quantidade: '', readonly: false };
-  }
-
-  private formatarNumero(valor?: number): string {
-    if (valor === null || valor === undefined) {
-      return '';
-    }
-    return Number.isFinite(Number(valor)) ? String(valor) : '';
-  }
-
-  private normalizarMaterialServidor(item: any): MaterialCorte {
-    const altura = this.formatarNumero(
-      item?.altura ?? item?.Altura ?? item?.comprimento ?? item?.Comprimento
-    );
-    return {
-      material: item?.tipoMaterial ?? item?.TipoMaterial ?? '',
-      altura,
-      largura: this.formatarNumero(item?.largura ?? item?.Largura),
-      espessura: this.formatarNumero(item?.espessura ?? item?.Espessura),
-      quantidade: this.formatarNumero(item?.quantidade ?? item?.Quantidade),
-      readonly: true
-    };
-  }
-
-  podeRemoverMaterial(item: MaterialCorte): boolean {
-    const possuiDados =
-      !!item.material?.trim() ||
-      !!item.altura?.trim() ||
-      !!item.largura?.trim() ||
-      !!item.espessura?.trim() ||
-      !!item.quantidade?.trim();
-
-    return !item.readonly && !possuiDados;
   }
 
   private extrairEtapaId(fonte: any): number | null {
@@ -311,13 +260,6 @@ export class EmAndamento implements OnInit, OnDestroy {
     );
   }
 
-  exibeBotaoCorte(etapa?: string): boolean {
-    if (!etapa) {
-      return false;
-    }
-    return this.removerAcentos(etapa).toLowerCase() === 'preparacao';
-  }
-
   carregarProcessos(): void {
     this.iniciarCarregamento();
     this.processoService.listarProcessosAndamento().subscribe({
@@ -436,7 +378,6 @@ export class EmAndamento implements OnInit, OnDestroy {
     this.modalGeralAberto = false;
     this.modalEtapaAberto = false;
     this.modalAvancarAberto = false;
-    this.modalCorteAberto = false;
   }
 
   abrirDetalhesGeral(processo: ProcessoResumo): void {
@@ -532,30 +473,6 @@ export class EmAndamento implements OnInit, OnDestroy {
     this.modalAvancarAberto = true;
   }
 
-  abrirModalCorte(processo: ProcessoEtapa): void {
-    this.fecharModais();
-    const etapaId = this.extrairEtapaId(processo) ?? processo.etapaId ?? undefined;
-    this.processoCorte = { ...processo, etapaId };
-    this.materiais = [this.criarMaterialEmBranco()];
-    this.modalCorteAberto = true;
-
-    this.iniciarCarregamento();
-    this.processoService.obterDetalhesPreparacao(processo.id).subscribe({
-      next: (lista) => {
-        const materiaisExistentes = (lista ?? []).map((item) => this.normalizarMaterialServidor(item));
-        this.materiais =
-          materiaisExistentes.length > 0
-            ? [...materiaisExistentes, this.criarMaterialEmBranco()]
-            : [this.criarMaterialEmBranco()];
-        this.finalizarCarregamento();
-      },
-      error: (err) => {
-        console.error('Erro ao carregar detalhes de corte:', err);
-        this.finalizarCarregamento();
-      }
-    });
-  }
-
   fecharModalGeral(): void {
     this.modalGeralAberto = false;
   }
@@ -567,12 +484,6 @@ export class EmAndamento implements OnInit, OnDestroy {
 
   fecharModalAvancar(): void {
     this.modalAvancarAberto = false;
-  }
-
-  fecharModalCorte(): void {
-    this.modalCorteAberto = false;
-    this.processoCorte = null;
-    this.materiais = [this.criarMaterialEmBranco()];
   }
 
   salvarAlteracoes(): void {
@@ -787,139 +698,6 @@ export class EmAndamento implements OnInit, OnDestroy {
     };
 
     normalizarEtapaAtual(this.processoAvancar.etapaId ?? null);
-  }
-
-  adicionarLinha(): void {
-    this.materiais.push(this.criarMaterialEmBranco());
-  }
-
-  removerLinha(index: number): void {
-    const item = this.materiais[index];
-    if (!item) {
-      return;
-    }
-
-    if (!this.podeRemoverMaterial(item)) {
-      alert('Remova apenas linhas em branco.');
-      return;
-    }
-
-    this.materiais.splice(index, 1);
-
-    if (this.materiais.length === 0) {
-      this.materiais.push(this.criarMaterialEmBranco());
-    }
-  }
-
-  concluirCorte(): void {
-    if (!this.processoCorte?.id) {
-      console.error('Nao foi possivel identificar o processo para registrar o corte.');
-      return;
-    }
-
-    const materiaisValidos = this.materiais
-      .filter((item) => {
-        const possuiDados =
-          item.material?.trim() ||
-          item.altura?.trim() ||
-          item.largura?.trim() ||
-          item.espessura?.trim() ||
-          item.quantidade?.trim();
-        return Boolean(possuiDados);
-      })
-      .map((item) => ({
-        material: item.material.trim(),
-        altura: Number(item.altura),
-        largura: Number(item.largura),
-        espessura: Number(item.espessura),
-        quantidade: Number(item.quantidade)
-      }));
-
-    if (!materiaisValidos.length) {
-      alert('Informe ao menos um material para salvar o corte.');
-      return;
-    }
-
-    const possuiDadosInvalidos = materiaisValidos.some(
-      (item) =>
-        !item.material ||
-        Number.isNaN(item.altura) ||
-        Number.isNaN(item.largura) ||
-        Number.isNaN(item.espessura) ||
-        Number.isNaN(item.quantidade) ||
-        item.altura <= 0 ||
-        item.largura <= 0 ||
-        item.espessura <= 0 ||
-        item.quantidade <= 0
-    );
-
-    if (possuiDadosInvalidos) {
-      alert('Preencha todos os campos com valores maiores que zero.');
-      return;
-    }
-
-    const etapaIdAtual = this.processoCorte.etapaId ?? null;
-    this.iniciarCarregamento();
-
-    const salvarMateriais = (etapaId: number) => {
-      const requisicoes = materiaisValidos.map((item) =>
-        this.processoService.salvarDetalhesPreparacao({
-          etapaId,
-          tipoMaterial: item.material,
-          comprimento: item.altura,
-          largura: item.largura,
-          altura: item.altura,
-          espessura: item.espessura,
-          quantidade: item.quantidade
-        })
-      );
-
-      forkJoin(requisicoes).subscribe({
-        next: () => {
-          this.finalizarCarregamento();
-          const materiaisPersistidos = materiaisValidos.map<MaterialCorte>((item) => ({
-            material: item.material,
-            altura: String(item.altura),
-            largura: String(item.largura),
-            espessura: String(item.espessura),
-            quantidade: String(item.quantidade),
-            readonly: true
-          }));
-          this.materiais = [...materiaisPersistidos.map((item) => ({ ...item })), this.criarMaterialEmBranco()];
-          console.log('Detalhes de corte salvos com sucesso.');
-        },
-        error: (err) => {
-          console.error('Erro ao salvar detalhes do corte:', err);
-          this.finalizarCarregamento();
-          alert('Nao foi possivel salvar os detalhes do corte. Veja o console.');
-        }
-      });
-    };
-
-    if (etapaIdAtual) {
-      salvarMateriais(etapaIdAtual);
-      return;
-    }
-
-    const etapaNome = this.processoCorte.etapa;
-    this.resolverEtapaId(this.processoCorte.id, etapaNome).subscribe({
-      next: (etapaId) => {
-        if (!etapaId) {
-          console.error('Nao foi possivel identificar a etapa de preparacao para registrar o corte.');
-          this.finalizarCarregamento();
-          alert('Nao foi possivel salvar os detalhes do corte. Veja o console.');
-          return;
-        }
-
-        this.processoCorte.etapaId = etapaId;
-        salvarMateriais(etapaId);
-      },
-      error: (erro) => {
-        console.error('Erro ao tentar identificar a etapa de corte:', erro);
-        this.finalizarCarregamento();
-        alert('Nao foi possivel salvar os detalhes do corte. Veja o console.');
-      }
-    });
   }
 
   finalizarProcesso(processo: ProcessoResumo | ProcessoEtapa): void {

@@ -10,7 +10,6 @@ namespace IsonelApi.Data
 
         public DbSet<Processo> Processos { get; set; }
         public DbSet<Etapa> Etapas { get; set; }
-        public DbSet<DetalhesPreparacao> DetalhesPreparacoes { get; set; }
         public DbSet<HistoricoMovimentacao> HistoricoMovimentacoes { get; set; }
         public DbSet<ProcessoAndamentoDto> ProcessosAndamento { get; set; }
         public DbSet<ProcessoPausadoDto> ProcessosPausado { get; set; }
@@ -18,8 +17,6 @@ namespace IsonelApi.Data
         public DbSet<DetalhesProcessoAndamentoDto> DetalhesProcessoAndamento { get; set; }
         public DbSet<ProcessoEtapaEmAndamentoDto> ProcessosEtapaEmAndamento { get; set; }
         public DbSet<DetalhesEtapaAtualDto> DetalhesEtapaAtual { get; set; }
-
-        public DbSet<MaterialPreparacaoDto> MaterialPreparacao { get; set; }
 
         public DbSet<DetalhesProcessoFinalizadoDto> DetalhesProcessoFinalizado { get; set; }
         public DbSet<EtapaProcessoFinalizadoDto> EtapasProcessoFinalizado { get; set; }
@@ -36,7 +33,6 @@ namespace IsonelApi.Data
             modelBuilder.Entity<DetalhesProcessoAndamentoDto>().HasNoKey();
             modelBuilder.Entity<ProcessoEtapaEmAndamentoDto>().HasNoKey();
             modelBuilder.Entity<DetalhesEtapaAtualDto>().HasNoKey();
-            modelBuilder.Entity<MaterialPreparacaoDto>().HasNoKey();
             modelBuilder.Entity<DetalhesProcessoFinalizadoDto>().HasNoKey();
             modelBuilder.Entity<EtapaProcessoFinalizadoDto>().HasNoKey();
 

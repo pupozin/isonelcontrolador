@@ -46,7 +46,6 @@
         <span class="responsavel"><i class="fa-solid fa-user"></i> {{ p.responsavel }}</span>
         <span><i class="fa-solid fa-store"></i> {{ p.cliente }}</span>
         <button class="btn-detalhes" (click)="abrirDetalhesEtapa(p)">Detalhes</button>
-        <button *ngIf="exibeBotaoCorte(p.etapa)" class="btn-corte" (click)="abrirModalCorte(p)">Corte</button>
         <button *ngIf="p.etapa !== 'Ligação'" class="btn-acao" (click)="abrirAvancarEtapa(p)">
           Avançar etapa
         </button>
@@ -150,36 +149,9 @@
     </div>
   </div>
 
-  <div class="modal-overlay" *ngIf="modalCorteAberto" (click)="fecharModalCorte()">
-    <div class="modal-corte" (click)="$event.stopPropagation()">
-      <h2>Corte</h2>
+  
 
-      <div class="modal-corte__content">
-        <div *ngFor="let item of materiais; let i = index" class="linha-inputs">
-          <input type="text" [(ngModel)]="item.material" placeholder="Material" [disabled]="!!item.readonly" />
-          <input type="number" [(ngModel)]="item.altura" placeholder="Altura" [disabled]="!!item.readonly" />
-          <input type="number" [(ngModel)]="item.largura" placeholder="Largura" [disabled]="!!item.readonly" />
-          <input type="number" [(ngModel)]="item.espessura" placeholder="Espessura" [disabled]="!!item.readonly" />
-          <input type="number" [(ngModel)]="item.quantidade" placeholder="Quantidade" [disabled]="!!item.readonly" />
-          <button
-            type="button"
-            class="btn-add"
-            (click)="removerLinha(i)"
-            [disabled]="!podeRemoverMaterial(item)"
-          >
-            &times;
-          </button>
-        </div>
 
-        <button class="btn-add" type="button" (click)="adicionarLinha()">+</button>
 
-        <div class="modal-actions">
-          <button class="btn-cancelar" (click)="fecharModalCorte()">Cancelar</button>
-          <button class="btn-concluir" (click)="concluirCorte()">Concluir</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 

@@ -13,6 +13,5 @@
 
         // Relacionamento
         public Processo? Processo { get; set; }
-        public ICollection<DetalhesPreparacao> DetalhesPreparacoes { get; set; } = new List<DetalhesPreparacao>();
     }
 }

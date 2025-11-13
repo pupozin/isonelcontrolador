@@ -34,7 +34,6 @@ export interface EtapaFinalizadaDto {
 export class ProcessoService {
   private apiUrl = 'https://localhost:7137/api/Processo'; // Ajuste se a API usar outra porta
   private etapaUrl = 'https://localhost:7137/api/Etapa';
-  private detalhesPreparacaoUrl = 'https://localhost:7137/api/DetalhesPreparacao';
 
   private readonly processosAtualizadosSubject = new Subject<void>();
   readonly processosAtualizados$ = this.processosAtualizadosSubject.asObservable();
@@ -96,10 +95,6 @@ export class ProcessoService {
     return this.http.post<any>(`${this.apiUrl}`, payload);
   }
 
-  obterDetalhesPreparacao(id: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${id}/detalhes-preparacao`);
-  }
-
   getDetalhesProcessoFinalizado(id: number): Observable<DetalhesProcessoFinalizadoDto> {
     return this.http.get<DetalhesProcessoFinalizadoDto>(`${this.apiUrl}/${id}/detalhes-finalizado`);
   }
@@ -108,23 +103,11 @@ export class ProcessoService {
     return this.http.get<EtapaFinalizadaDto[]>(`${this.apiUrl}/${id}/etapas-finalizado`);
   }
 
-  salvarDetalhesPreparacao(payload: {
-    etapaId: number;
-    tipoMaterial: string;
-    comprimento: number;
-    largura: number;
-    altura: number;
-    espessura: number;
-    quantidade: number;
-  }): Observable<any> {
-    return this.http.post<any>(`${this.detalhesPreparacaoUrl}`, payload);
-  }
-
   notificarAtualizacaoProcessos(): void {
     this.processosAtualizadosSubject.next();
   }
 
   pesquisarProcessos(termo: string) {
-  return this.http.get<any[]>(`${this.apiUrl}/pesquisar?termo=${encodeURIComponent(termo)}`);
-}
+    return this.http.get<any[]>(`${this.apiUrl}/pesquisar?termo=${encodeURIComponent(termo)}`);
+  }
 }

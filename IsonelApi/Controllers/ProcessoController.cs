@@ -21,12 +21,12 @@ namespace IsonelApi.Controllers
         public IActionResult CriarProcesso([FromBody] ProcessoCreateDto dto)
         {
             if (dto == null)
-                return BadRequest("Dados inválidos.");
+                return BadRequest("Dados inv�lidos.");
 
-            // Define etapa inicial (caso não enviada, assume "VENDA")
+            // Define etapa inicial (caso n�o enviada, assume "VENDA")
             var etapaInicial = string.IsNullOrWhiteSpace(dto.TipoEtapa) ? "VENDA" : dto.TipoEtapa.ToUpper();
 
-            // Gera código automático
+            // Gera c�digo autom�tico
             var total = _context.Processos.Count() + 1;
             var codigoGerado = $"Processo #{total.ToString("D5")}";
 
@@ -78,7 +78,7 @@ namespace IsonelApi.Controllers
         {
             var processo = _context.Processos.FirstOrDefault(p => p.Id == id);
             if (processo == null)
-                return NotFound("Processo não encontrado.");
+                return NotFound("Processo n�o encontrado.");
 
             if (!string.IsNullOrWhiteSpace(dto.Observacao))
                 processo.Observacao = dto.Observacao;
@@ -126,7 +126,7 @@ namespace IsonelApi.Controllers
         {
             var processo = _context.Processos.FirstOrDefault(p => p.Id == id);
             if (processo == null)
-                return NotFound("Processo não encontrado.");
+                return NotFound("Processo n�o encontrado.");
 
             // Recupera a etapa corrente (prioriza status diferente de Finalizado)
             var etapaAtual = _context.Etapas
@@ -146,7 +146,7 @@ namespace IsonelApi.Controllers
             etapaAtual.Observacao = dto.Observacao ?? etapaAtual.Observacao;
             etapaAtual.DataFim = DateTime.Now;
 
-            // Determina a próxima etapa (simples por agora, podemos evoluir depois)
+            // Determina a pr�xima etapa (simples por agora, podemos evoluir depois)
             string proximaEtapa = dto.ProximaEtapa?.ToUpper() ?? "PROXIMA";
 
             // Cria nova etapa
@@ -165,7 +165,7 @@ namespace IsonelApi.Controllers
             processo.EstadoAtual = proximaEtapa;
             processo.StatusAtual = "Em andamento";
 
-            // Registra histórico
+            // Registra hist�rico
             var historico = new HistoricoMovimentacao
             {
                 ProcessoId = processo.Id,
@@ -180,7 +180,7 @@ namespace IsonelApi.Controllers
 
             return Ok(new
             {
-                message = "Etapa avançada com sucesso!",
+                message = "Etapa avan�ada com sucesso!",
                 processo.Id,
                 processo.Codigo,
                 etapaAnterior = etapaAtual.TipoEtapa,
@@ -235,7 +235,7 @@ namespace IsonelApi.Controllers
                 .FirstOrDefault();
 
             if (detalhes == null)
-                return NotFound("Detalhes do processo não encontrados.");
+                return NotFound("Detalhes do processo n�o encontrados.");
 
             return Ok(detalhes);
         }
@@ -263,22 +263,6 @@ namespace IsonelApi.Controllers
 
             if (detalhes == null)
                 return NotFound("Nenhuma etapa encontrada para este processo.");
-
-            return Ok(detalhes);
-        }
-
-        // Retorna os detalhes da etapa de Preparação (materiais)
-        [HttpGet("{id}/detalhes-preparacao")]
-        public IActionResult ObterDetalhesPreparacaoAtual(int id)
-        {
-            var detalhes = _context.Set<MaterialPreparacaoDto>()
-                .FromSqlRaw("EXEC sp_ListarDetalhesPreparacaoAtual @p0", id)
-                .AsEnumerable()
-                .ToList();
-
-
-            if (detalhes == null || !detalhes.Any())
-                return NotFound("Nenhum detalhe de preparação encontrado para este processo.");
 
             return Ok(detalhes);
         }
@@ -344,7 +328,7 @@ namespace IsonelApi.Controllers
                 .FirstOrDefault();
 
             if (detalhes == null)
-                return NotFound("Processo não encontrado ou não está finalizado.");
+                return NotFound("Processo n�o encontrado ou n�o est� finalizado.");
 
             return Ok(detalhes);
         }
@@ -463,15 +447,6 @@ namespace IsonelApi.Controllers
         public DateTime DataInicioEtapa { get; set; }
     }
 
-    public class MaterialPreparacaoDto
-    {
-        public string TipoMaterial { get; set; } = string.Empty;
-        public decimal Comprimento { get; set; }  
-        public decimal Altura { get; set; }
-        public decimal Espessura { get; set; }
-        public decimal Largura { get; set; }
-        public int Quantidade { get; set; }
-    }
 
     public class PesquisaProcessoDto
     {
@@ -516,4 +491,6 @@ namespace IsonelApi.Controllers
 
 
 }
+
+
 
