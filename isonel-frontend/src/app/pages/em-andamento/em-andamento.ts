@@ -649,10 +649,13 @@ export class EmAndamento implements OnInit, OnDestroy {
       });
     };
 
-    const normalizarEtapaAtual = (etapaId?: number | null) => {
-      if (!etapaId) {
+    const normalizarEtapaAtual = (contexto?: { etapaId?: number | null; detalhes?: any }) => {
+      const etapaId = contexto?.etapaId ?? this.processoAvancar.etapaId ?? null;
+      const detalhes = contexto?.detalhes;
+
+      if (!etapaId || !detalhes) {
         this.buscarEtapaAtual(processoId).subscribe({
-          next: ({ etapaId: etapaIdEncontrado }) => {
+          next: ({ etapaId: etapaIdEncontrado, dados }) => {
             if (!etapaIdEncontrado) {
               console.warn(
                 'Nao foi possivel identificar a etapa ativa antes do avanco. Tentando avancar mesmo assim.'
@@ -660,7 +663,7 @@ export class EmAndamento implements OnInit, OnDestroy {
               avancarParaProximaEtapa();
               return;
             }
-            normalizarEtapaAtual(etapaIdEncontrado);
+            normalizarEtapaAtual({ etapaId: etapaIdEncontrado, detalhes: dados });
           },
           error: (erro) => {
             console.error('Erro ao obter detalhes da etapa antes do avanco:', erro);
@@ -670,6 +673,11 @@ export class EmAndamento implements OnInit, OnDestroy {
         return;
       }
 
+      const observacaoAtual =
+        (typeof detalhes?.observacao === 'string' && detalhes.observacao) ||
+        (typeof detalhes?.Observacao === 'string' && detalhes.Observacao) ||
+        '';
+
       const payloadEtapaAtual: {
         status?: string;
         statusEtapa?: string;
@@ -678,12 +686,16 @@ export class EmAndamento implements OnInit, OnDestroy {
       } = {
         status: 'Em andamento',
         statusEtapa: 'Em andamento',
-        observacao: ''
+        observacao: observacaoAtual
       };
 
-      const responsavelAtual = this.processoAvancar?.responsavel?.trim();
-      if (responsavelAtual) {
-        payloadEtapaAtual.responsavel = responsavelAtual;
+      const responsavelAtual =
+        detalhes?.responsavel ??
+        detalhes?.Responsavel ??
+        this.processoAvancar?.responsavel ??
+        '';
+      if (typeof responsavelAtual === 'string' && responsavelAtual.trim()) {
+        payloadEtapaAtual.responsavel = responsavelAtual.trim();
       }
 
       this.processoService.atualizarEtapa(etapaId, payloadEtapaAtual).subscribe({
@@ -697,7 +709,7 @@ export class EmAndamento implements OnInit, OnDestroy {
       });
     };
 
-    normalizarEtapaAtual(this.processoAvancar.etapaId ?? null);
+    normalizarEtapaAtual({ etapaId: this.processoAvancar.etapaId ?? null });
   }
 
   finalizarProcesso(processo: ProcessoResumo | ProcessoEtapa): void {

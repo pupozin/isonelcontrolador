@@ -143,7 +143,10 @@ namespace IsonelApi.Controllers
 
             // Finaliza a etapa atual
             etapaAtual.Status = "Finalizado";
-            etapaAtual.Observacao = dto.Observacao ?? etapaAtual.Observacao;
+            if (!string.IsNullOrWhiteSpace(dto.Observacao))
+            {
+                etapaAtual.Observacao = dto.Observacao!.Trim();
+            }
             etapaAtual.DataFim = DateTime.Now;
 
             // Determina a pr�xima etapa (simples por agora, podemos evoluir depois)
