@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using IsonelApi.Data;
 using IsonelApi.Models;
+using IsonelApi.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static IsonelApi.Models.Dto.ProcessoDTO;
 
 namespace IsonelApi.Controllers
 {
@@ -21,12 +23,12 @@ namespace IsonelApi.Controllers
         public IActionResult CriarProcesso([FromBody] ProcessoCreateDto dto)
         {
             if (dto == null)
-                return BadRequest("Dados inv�lidos.");
+                return BadRequest("Dados inv?lidos.");
 
-            // Define etapa inicial (caso n�o enviada, assume "VENDA")
+            // Define etapa inicial (caso n?o enviada, assume "VENDA")
             var etapaInicial = string.IsNullOrWhiteSpace(dto.TipoEtapa) ? "VENDA" : dto.TipoEtapa.ToUpper();
 
-            // Gera c�digo autom�tico
+            // Gera c?digo autom?tico
             var total = _context.Processos.Count() + 1;
             var codigoGerado = $"Processo #{total.ToString("D5")}";
 
@@ -78,7 +80,7 @@ namespace IsonelApi.Controllers
         {
             var processo = _context.Processos.FirstOrDefault(p => p.Id == id);
             if (processo == null)
-                return NotFound("Processo n�o encontrado.");
+                return NotFound("Processo n?o encontrado.");
 
             if (!string.IsNullOrWhiteSpace(dto.Observacao))
                 processo.Observacao = dto.Observacao;
@@ -126,7 +128,7 @@ namespace IsonelApi.Controllers
         {
             var processo = _context.Processos.FirstOrDefault(p => p.Id == id);
             if (processo == null)
-                return NotFound("Processo n�o encontrado.");
+                return NotFound("Processo n?o encontrado.");
 
             // Recupera a etapa corrente (prioriza status diferente de Finalizado)
             var etapaAtual = _context.Etapas
@@ -149,7 +151,7 @@ namespace IsonelApi.Controllers
             }
             etapaAtual.DataFim = DateTime.Now;
 
-            // Determina a pr�xima etapa (simples por agora, podemos evoluir depois)
+            // Determina a pr?xima etapa (simples por agora, podemos evoluir depois)
             string proximaEtapa = dto.ProximaEtapa?.ToUpper() ?? "PROXIMA";
 
             // Cria nova etapa
@@ -168,7 +170,7 @@ namespace IsonelApi.Controllers
             processo.EstadoAtual = proximaEtapa;
             processo.StatusAtual = "Em andamento";
 
-            // Registra hist�rico
+            // Registra hist?rico
             var historico = new HistoricoMovimentacao
             {
                 ProcessoId = processo.Id,
@@ -183,7 +185,7 @@ namespace IsonelApi.Controllers
 
             return Ok(new
             {
-                message = "Etapa avan�ada com sucesso!",
+                message = "Etapa avan?ada com sucesso!",
                 processo.Id,
                 processo.Codigo,
                 etapaAnterior = etapaAtual.TipoEtapa,
@@ -238,7 +240,7 @@ namespace IsonelApi.Controllers
                 .FirstOrDefault();
 
             if (detalhes == null)
-                return NotFound("Detalhes do processo n�o encontrados.");
+                return NotFound("Detalhes do processo n?o encontrados.");
 
             return Ok(detalhes);
         }
@@ -331,7 +333,7 @@ namespace IsonelApi.Controllers
                 .FirstOrDefault();
 
             if (detalhes == null)
-                return NotFound("Processo n�o encontrado ou n�o est� finalizado.");
+                return NotFound("Processo n?o encontrado ou n?o est? finalizado.");
 
             return Ok(detalhes);
         }
@@ -351,148 +353,6 @@ namespace IsonelApi.Controllers
             return Ok(etapas);
         }
     }
-
-    public class ProcessoCreateDto
-    {
-        public string Cliente { get; set; } = string.Empty;
-        public string Produto { get; set; } = string.Empty;
-        public string Responsavel { get; set; } = string.Empty;
-        public string TipoEtapa { get; set; } = string.Empty;
-        public string Observacao { get; set; } = string.Empty;
-    }
-
-    public class ProcessoUpdateDto
-    {
-        public string Observacao { get; set; } = string.Empty;
-        public string StatusAtual { get; set; } = string.Empty;
-    }
-
-    public class AvancarEtapaDto
-    {
-        public string? ProximaEtapa { get; set; }
-        public string Responsavel { get; set; } = string.Empty;
-        public string? Observacao { get; set; }
-    }
-
-    public class ProcessoAndamentoDto
-    {
-        public int Id { get; set; }
-        public string? Codigo { get; set; }
-        public string? Cliente { get; set; }
-        public string? Produto { get; set; }
-        public string? EstadoAtual { get; set; }
-        public string? StatusProcesso { get; set; }
-        public string? Responsavel { get; set; }
-        public DateTime DataInicio { get; set; }
-    }
-
-    public class ProcessoPausadoDto
-    {
-        public int Id { get; set; }
-        public string? Codigo { get; set; }
-        public string? Cliente { get; set; }
-        public string? Produto { get; set; }
-        public string? EstadoAtual { get; set; }
-        public string? StatusProcesso { get; set; }
-        public string? Responsavel { get; set; }
-        public DateTime DataInicio { get; set; }
-    }
-
-    public class ProcessoFinalizadoDto
-    {
-        public int Id { get; set; }
-        public string? Codigo { get; set; }
-        public string? Cliente { get; set; }
-        public string? Produto { get; set; }
-        public string? EstadoAtual { get; set; }
-        public string? StatusProcesso { get; set; }
-        public string? Responsavel { get; set; }
-        public DateTime DataInicio { get; set; }
-    }
-
-
-    public class DetalhesProcessoAndamentoDto
-    {
-        public int ProcessoId { get; set; }
-        public string? Codigo { get; set; }
-        public string? Cliente { get; set; }
-        public string? Produto { get; set; }
-        public string? EstadoAtual { get; set; }
-        public string? StatusProcesso { get; set; }
-        public string? Responsavel { get; set; }
-        public string? Observacao { get; set; }
-        public DateTime DataInicioProcesso { get; set; }
-        public DateTime DataInicioEtapa { get; set; }
-    }
-
-    public class ProcessoEtapaEmAndamentoDto
-    {
-        public int ProcessoId { get; set; }
-        public int EtapaId { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Cliente { get; set; } = string.Empty;
-        public string Responsavel { get; set; } = string.Empty;
-        public string StatusEtapa { get; set; } = string.Empty;
-    }
-
-    public class DetalhesEtapaAtualDto
-    {
-        public int ProcessoId { get; set; }
-        public int EtapaId { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Cliente { get; set; } = string.Empty;
-        public string Produto { get; set; } = string.Empty;
-        public string TipoEtapa { get; set; } = string.Empty;
-        public string StatusEtapa { get; set; } = string.Empty;
-        public string Responsavel { get; set; } = string.Empty;
-        public string Observacao { get; set; } = string.Empty;
-        public DateTime DataInicioProcesso { get; set; }
-        public DateTime DataInicioEtapa { get; set; }
-    }
-
-
-    public class PesquisaProcessoDto
-    {
-        public int ProcessoId { get; set; }
-        public int? EtapaId { get; set; }
-        public string? Codigo { get; set; }
-        public string? Cliente { get; set; }
-        public string? Produto { get; set; }
-        public string? EstadoAtual { get; set; }
-        public string? StatusAtual { get; set; }
-        public string? Responsavel { get; set; }
-        public string? TipoEtapa { get; set; }
-        public string? StatusEtapa { get; set; }
-        public DateTime DataInicio { get; set; }
-    }
-
-    public class DetalhesProcessoFinalizadoDto
-    {
-        public int ProcessoId { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Cliente { get; set; } = string.Empty;
-        public string Produto { get; set; } = string.Empty;
-        public string StatusProcesso { get; set; } = string.Empty;
-        public string Observacao { get; set; } = string.Empty;
-        public DateTime DataInicioProcesso { get; set; }
-        public DateTime? DataFimProcesso { get; set; }
-        public int DuracaoTotalMinutos { get; set; }
-        public string DuracaoFormatada { get; set; } = string.Empty;
-    }
-
-    public class EtapaProcessoFinalizadoDto
-    {
-        public int EtapaId { get; set; }
-        public string TipoEtapa { get; set; } = string.Empty;
-        public string Responsavel { get; set; } = string.Empty;
-        public DateTime DataInicioEtapa { get; set; }
-        public DateTime? DataFimEtapa { get; set; }
-        public int DuracaoMinutos { get; set; }
-        public string DuracaoFormatada { get; set; } = string.Empty;
-        public string Observacao { get; set; } = string.Empty;
-    }
-
-
 }
 
 

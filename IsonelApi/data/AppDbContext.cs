@@ -1,6 +1,6 @@
-﻿using IsonelApi.Controllers;
-using IsonelApi.Models; // 👈 importa as classes dos modelos
+using IsonelApi.Models;
 using Microsoft.EntityFrameworkCore;
+using static IsonelApi.Models.Dto.ProcessoDTO;
 
 namespace IsonelApi.Data
 {
@@ -26,7 +26,7 @@ namespace IsonelApi.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // 🔹 Registra o DTO da procedure (sem chave, sem tabela)
+            // ?? Registra o DTO da procedure (sem chave, sem tabela)
             modelBuilder.Entity<ProcessoAndamentoDto>().HasNoKey();
             modelBuilder.Entity<ProcessoPausadoDto>().HasNoKey();
             modelBuilder.Entity<ProcessoFinalizadoDto>().HasNoKey();
@@ -39,4 +39,5 @@ namespace IsonelApi.Data
         }
     }
 }
+
 
