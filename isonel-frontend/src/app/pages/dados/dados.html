@@ -47,8 +47,8 @@
           <h2>Etapas por tipo</h2>
           <p>Tempo médio e quantidade finalizada no período.</p>
         </header>
-        <div class="lista" *ngIf="info.etapasPorTipo?.length; else vazioEtapas">
-          <div class="linha" *ngFor="let etapa of info.etapasPorTipo">
+        <div class="lista" *ngIf="info.mediasPorEtapa?.length; else vazioEtapas">
+          <div class="linha" *ngFor="let etapa of info.mediasPorEtapa">
             <div>
               <strong>{{ etapa.tipoEtapa }}</strong>
               <span>{{ etapa.qtdEtapas }} etapas</span>
@@ -86,14 +86,14 @@
         <h2>Processos mais longos</h2>
         <p>Top 5 processos finalizados com maior duração.</p>
       </header>
-      <div class="tabela" *ngIf="info.processosMaisLongos?.length; else vazioProcessos">
+      <div class="tabela" *ngIf="info.processosMaisLentos?.length; else vazioProcessos">
         <div class="cabecalho-grid">
           <span>Código</span>
           <span>Cliente</span>
           <span>Produto</span>
           <span>Duração</span>
         </div>
-        <div class="linha-grid" *ngFor="let proc of info.processosMaisLongos">
+        <div class="linha-grid" *ngFor="let proc of info.processosMaisLentos">
           <span>{{ proc.codigo }}</span>
           <span>{{ proc.cliente }}</span>
           <span>{{ proc.produto }}</span>
@@ -110,8 +110,8 @@
         <header>
           <h2>Processos finalizados por dia</h2>
         </header>
-        <div class="lista" *ngIf="info.processosPorDia?.length; else vazioDias">
-          <div class="linha" *ngFor="let dia of info.processosPorDia">
+        <div class="lista" *ngIf="info.throughputDiario?.length; else vazioDias">
+          <div class="linha" *ngFor="let dia of info.throughputDiario">
             <div>
               <strong>{{ formatarData(dia.dia) }}</strong>
             </div>

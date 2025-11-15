@@ -66,9 +66,9 @@ export interface InsightsResponsavelDto {
 
 export interface InsightsProcessosResponse {
   resumo: InsightsResumoDto;
-  etapasPorTipo: InsightsEtapaTipoDto[];
-  processosMaisLongos: InsightsProcessoDestaqueDto[];
-  processosPorDia: InsightsProcessosPorDiaDto[];
+  mediasPorEtapa: InsightsEtapaTipoDto[];
+  processosMaisLentos: InsightsProcessoDestaqueDto[];
+  throughputDiario: InsightsProcessosPorDiaDto[];
   responsaveis: InsightsResponsavelDto[];
 }
 
