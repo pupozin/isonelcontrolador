@@ -77,7 +77,7 @@ export interface InsightsProcessosResponse {
 })
 export class ProcessoService {
   private apiUrl = 'https://localhost:7137/api/Processo'; // Ajuste se a API usar outra porta
-  private apiUrlInsights = 'https://localhost:7137/api/insights'; // Ajuste se a API usar outra porta
+  private insightsUrl = 'https://localhost:7137/api/insights';
   private etapaUrl = 'https://localhost:7137/api/Etapa';
 
   private readonly processosAtualizadosSubject = new Subject<void>();
@@ -149,7 +149,13 @@ export class ProcessoService {
   }
 
   obterInsightsProcessos(ano: number, mes: number): Observable<InsightsProcessosResponse> {
-    return this.http.get<InsightsProcessosResponse>(`${this.apiUrlInsights}/processos?ano=${ano}&mes=${mes}`);
+    return this.http.get<InsightsProcessosResponse>(`${this.insightsUrl}/processos?ano=${ano}&mes=${mes}`);
+  }
+
+  exportarInsightsProcessosCsv(ano: number, mes: number): Observable<Blob> {
+    return this.http.get(`${this.insightsUrl}/processos/export?ano=${ano}&mes=${mes}`, {
+      responseType: 'blob'
+    });
   }
 
   notificarAtualizacaoProcessos(): void {

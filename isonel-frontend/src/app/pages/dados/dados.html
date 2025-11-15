@@ -3,10 +3,16 @@
     <div class="titulo">
       <h1>Dados e insights</h1>
     </div>
-    <label class="seletor-mes">
-      <span>Mês de referência</span>
-      <input type="month" [(ngModel)]="mesSelecionado" (change)="alterarMes()" />
-    </label>
+    <div class="acoes-header">
+      <label class="seletor-mes">
+        <span>Mês de referência</span>
+        <input type="month" [(ngModel)]="mesSelecionado" (change)="alterarMes()" />
+      </label>
+      <button class="btn-exportar" (click)="exportarCsv()" [disabled]="carregando || exportando">
+        <i class="fa-solid fa-file-export"></i>
+        {{ exportando ? 'Gerando...' : 'Exportar CSV' }}
+      </button>
+    </div>
   </div>
 
   <div class="estado erro" *ngIf="erro">{{ erro }}</div>

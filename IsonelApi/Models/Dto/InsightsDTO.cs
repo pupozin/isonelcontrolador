@@ -4,16 +4,16 @@
     {
         public int ProcessosIniciados { get; set; }
         public int ProcessosFinalizados { get; set; }
-        public decimal DuracaoMediaProcessoMin { get; set; }
-        public decimal DuracaoMedianaProcessoMin { get; set; }
-        public decimal DuracaoMediaEtapaMin { get; set; }
+        public decimal? DuracaoMediaProcessoMin { get; set; }
+        public decimal? DuracaoMedianaProcessoMin { get; set; }
+        public decimal? DuracaoMediaEtapaMin { get; set; }
     }
 
     public class InsightsMediaEtapaDto
     {
         public string TipoEtapa { get; set; } = string.Empty;
         public int QtdEtapas { get; set; }
-        public decimal DuracaoMediaMin { get; set; }
+        public decimal? DuracaoMediaMin { get; set; }
     }
 
     public class InsightsProcessoLentoDto
@@ -38,7 +38,7 @@
     {
         public string Responsavel { get; set; } = string.Empty;
         public int QtdEtapas { get; set; }
-        public decimal DuracaoMediaMin { get; set; }
+        public decimal? DuracaoMediaMin { get; set; }
     }
 
     public class InsightsProcessosDto

@@ -18,6 +18,7 @@ export class DadosPage implements OnInit {
   carregando = false;
   erro: string | null = null;
   insights: InsightsProcessosResponse | null = null;
+  exportando = false;
 
   constructor(private readonly processoService: ProcessoService) {}
 
@@ -27,6 +28,36 @@ export class DadosPage implements OnInit {
 
   alterarMes(): void {
     this.carregarInsights();
+  }
+
+  exportarCsv(): void {
+    if (this.exportando) {
+      return;
+    }
+
+    const { ano, mes } = this.obterAnoMesReferencia();
+    if (!ano || !mes) {
+      alert('Selecione um mês válido.');
+      return;
+    }
+
+    this.exportando = true;
+    this.processoService.exportarInsightsProcessosCsv(ano, mes).subscribe({
+      next: (arquivo) => {
+        const url = window.URL.createObjectURL(arquivo);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `insights-${ano}-${mes.toString().padStart(2, '0')}.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.exportando = false;
+      },
+      error: (err) => {
+        console.error('Erro ao exportar CSV:', err);
+        this.exportando = false;
+        alert('Não foi possível exportar o relatório. Tente novamente.');
+      }
+    });
   }
 
   private carregarInsights(): void {
