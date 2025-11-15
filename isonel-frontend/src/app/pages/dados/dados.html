@@ -1,0 +1,127 @@
+<div class="dados-container container">
+  <div class="cabecalho">
+    <div>
+      <h1>Dados e insights</h1>
+      <p>Visão consolidada de processos, etapas e responsáveis.</p>
+    </div>
+    <label class="seletor-mes">
+      <span>Mês de referência</span>
+      <input type="month" [(ngModel)]="mesSelecionado" (change)="alterarMes()" />
+    </label>
+  </div>
+
+  <div class="estado erro" *ngIf="erro">{{ erro }}</div>
+
+  <div class="estado carregando" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando insights...</p>
+  </div>
+
+  <ng-container *ngIf="!carregando && insights as info">
+    <section class="cards-resumo">
+      <div class="card-resumo">
+        <p>Processos iniciados</p>
+        <strong>{{ info.resumo.processosIniciados }}</strong>
+      </div>
+      <div class="card-resumo">
+        <p>Processos finalizados</p>
+        <strong>{{ info.resumo.processosFinalizados }}</strong>
+      </div>
+      <div class="card-resumo">
+        <p>Duração média do processo</p>
+        <strong>{{ formatarDuracao(info.resumo.duracaoMediaProcessoMin) }}</strong>
+      </div>
+      <div class="card-resumo">
+        <p>Duração mediana do processo</p>
+        <strong>{{ formatarDuracao(info.resumo.duracaoMedianaProcessoMin) }}</strong>
+      </div>
+      <div class="card-resumo">
+        <p>Duração média das etapas</p>
+        <strong>{{ formatarDuracao(info.resumo.duracaoMediaEtapaMin) }}</strong>
+      </div>
+    </section>
+
+    <section class="grid-section">
+      <article class="card bloco">
+        <header>
+          <h2>Etapas por tipo</h2>
+          <p>Tempo médio e quantidade finalizada no período.</p>
+        </header>
+        <div class="lista" *ngIf="info.etapasPorTipo?.length; else vazioEtapas">
+          <div class="linha" *ngFor="let etapa of info.etapasPorTipo">
+            <div>
+              <strong>{{ etapa.tipoEtapa }}</strong>
+              <span>{{ etapa.qtdEtapas }} etapas</span>
+            </div>
+            <span class="destaque">{{ formatarDuracao(etapa.duracaoMediaMin) }}</span>
+          </div>
+        </div>
+        <ng-template #vazioEtapas>
+          <p class="mensagem-vazia">Nenhuma etapa finalizada no período.</p>
+        </ng-template>
+      </article>
+
+      <article class="card bloco">
+        <header>
+          <h2>Responsáveis</h2>
+          <p>Quem mais concluiu etapas neste mês.</p>
+        </header>
+        <div class="lista" *ngIf="info.responsaveis?.length; else vazioResp">
+          <div class="linha" *ngFor="let resp of info.responsaveis">
+            <div>
+              <strong>{{ resp.responsavel }}</strong>
+              <span>{{ resp.qtdEtapas }} etapas</span>
+            </div>
+            <span class="destaque">{{ formatarDuracao(resp.duracaoMediaMin) }}</span>
+          </div>
+        </div>
+        <ng-template #vazioResp>
+          <p class="mensagem-vazia">Nenhum responsável registrado.</p>
+        </ng-template>
+      </article>
+    </section>
+
+    <section class="card bloco">
+      <header>
+        <h2>Processos mais longos</h2>
+        <p>Top 5 processos finalizados com maior duração.</p>
+      </header>
+      <div class="tabela" *ngIf="info.processosMaisLongos?.length; else vazioProcessos">
+        <div class="cabecalho-grid">
+          <span>Código</span>
+          <span>Cliente</span>
+          <span>Produto</span>
+          <span>Duração</span>
+        </div>
+        <div class="linha-grid" *ngFor="let proc of info.processosMaisLongos">
+          <span>{{ proc.codigo }}</span>
+          <span>{{ proc.cliente }}</span>
+          <span>{{ proc.produto }}</span>
+          <span>{{ proc.duracaoFormatada }}</span>
+        </div>
+      </div>
+      <ng-template #vazioProcessos>
+        <p class="mensagem-vazia">Nenhum processo finalizado para este mês.</p>
+      </ng-template>
+    </section>
+
+    <section class="grid-section">
+      <article class="card bloco">
+        <header>
+          <h2>Processos finalizados por dia</h2>
+        </header>
+        <div class="lista" *ngIf="info.processosPorDia?.length; else vazioDias">
+          <div class="linha" *ngFor="let dia of info.processosPorDia">
+            <div>
+              <strong>{{ formatarData(dia.dia) }}</strong>
+            </div>
+            <span class="destaque">{{ dia.processosFinalizados }}</span>
+          </div>
+        </div>
+        <ng-template #vazioDias>
+          <p class="mensagem-vazia">Ainda não há finalizações neste mês.</p>
+        </ng-template>
+      </article>
+    </section>
+  </ng-container>
+</div>

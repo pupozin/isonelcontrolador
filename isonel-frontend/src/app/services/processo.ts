@@ -28,11 +28,56 @@ export interface EtapaFinalizadaDto {
   observacao: string | null;
 }
 
+export interface InsightsResumoDto {
+  processosIniciados: number;
+  processosFinalizados: number;
+  duracaoMediaProcessoMin: number | null;
+  duracaoMedianaProcessoMin: number | null;
+  duracaoMediaEtapaMin: number | null;
+}
+
+export interface InsightsEtapaTipoDto {
+  tipoEtapa: string;
+  qtdEtapas: number;
+  duracaoMediaMin: number | null;
+}
+
+export interface InsightsProcessoDestaqueDto {
+  processoId: number;
+  codigo: string;
+  cliente: string;
+  produto: string;
+  dataInicio: string;
+  dataFim: string | null;
+  duracaoMinutos: number;
+  duracaoFormatada: string;
+}
+
+export interface InsightsProcessosPorDiaDto {
+  dia: string;
+  processosFinalizados: number;
+}
+
+export interface InsightsResponsavelDto {
+  responsavel: string;
+  qtdEtapas: number;
+  duracaoMediaMin: number | null;
+}
+
+export interface InsightsProcessosResponse {
+  resumo: InsightsResumoDto;
+  etapasPorTipo: InsightsEtapaTipoDto[];
+  processosMaisLongos: InsightsProcessoDestaqueDto[];
+  processosPorDia: InsightsProcessosPorDiaDto[];
+  responsaveis: InsightsResponsavelDto[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ProcessoService {
   private apiUrl = 'https://localhost:7137/api/Processo'; // Ajuste se a API usar outra porta
+  private apiUrlInsights = 'https://localhost:7137/api/insights'; // Ajuste se a API usar outra porta
   private etapaUrl = 'https://localhost:7137/api/Etapa';
 
   private readonly processosAtualizadosSubject = new Subject<void>();
@@ -101,6 +146,10 @@ export class ProcessoService {
 
   getEtapasProcessoFinalizado(id: number): Observable<EtapaFinalizadaDto[]> {
     return this.http.get<EtapaFinalizadaDto[]>(`${this.apiUrl}/${id}/etapas-finalizado`);
+  }
+
+  obterInsightsProcessos(ano: number, mes: number): Observable<InsightsProcessosResponse> {
+    return this.http.get<InsightsProcessosResponse>(`${this.apiUrlInsights}/processos?ano=${ano}&mes=${mes}`);
   }
 
   notificarAtualizacaoProcessos(): void {
