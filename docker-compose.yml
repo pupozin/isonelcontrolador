@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./IsonelApi   
+      dockerfile: Dockerfile
+    container_name: isonel-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ConnectionStrings__DefaultConnection: "Server=host.docker.internal,1433;Database=IsonelDB;User Id=isonel_user;Password=SenhaFort3!;TrustServerCertificate=True;"
+    ports:
+      - "8081:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./isonel-frontend
+      dockerfile: Dockerfile
+    container_name: isonel-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
